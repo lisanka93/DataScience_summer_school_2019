@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 1 Answer 1</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><pre><code># 1. Analysis of cars dataset (Auto)
+
+# (a)
+
+# quantitative: 
+# mpg, cylinders,
+# displacement, horsepower, weight,
+# acceleration, year
+
+# qualitative: 
+# name, origin
+
+# (b)
+range(Auto$mpg)
+range(Auto$cylinders)
+range(Auto$displacement)
+range(Auto$horsepower)
+range(Auto$weight)
+
+mean(Auto$mpg)
+mean(Auto$cylinders)
+mean(Auto$displacement)
+mean(Auto$horsepower)
+mean(Auto$weight)
+
+sd(Auto$mpg)
+sd(Auto$cylinders)
+sd(Auto$displacement)
+sd(Auto$horsepower)
+sd(Auto$weight)
+
+# We will learn a more efficient way to do this tomorrow!
+
+# (d)
+Auto_subset &lt;- Auto[10:85,]
+
+# can reuse the commands for (c) but with Auto_subset
+
+e) 
+pairs(Auto)
+plot(Auto$mpg, Auto$weight)
+# Heavier weight correlates with lower mpg.
+plot(Auto$mpg, Auto$cylinders)
+# More cylinders, less mpg.
+plot(Auto$mpg, Auto$year)
+# Cars become more efficient over time.
+
+f)
+pairs(Auto)
+# See descriptions of plots in (e).
+# All of the predictors show some correlation with mpg. The name predictor has 
+# too little observations per name though, so using this as a predictor is 
+# likely to result in overfitting the data and will not generalize well.
+</code></pre>
+</div>
+</body>
+
+</html>

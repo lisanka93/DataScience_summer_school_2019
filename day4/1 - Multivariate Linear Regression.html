@@ -1,0 +1,426 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multivariate Linear Regression</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="multiple-linear-regression-models">Multiple linear regression models</h1>
+<h4 id="libraries">Libraries:</h4>
+<p>Start by loading the following libraries:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">library(haven) # used to load our data
+library(texreg) # used to display fit info
+library(dplyr) # used to manipulate data
+library(tidyr) # used for the drop_na function
+library(ggplot2) # in case we want to make ggplots
+</code></pre>
+<p>Note you may need to install packages <code>haven</code> <code>tidyr</code> <code>texreg</code> if you have not used them previously.</p>
+<p>You can do this the command <code>install.packages("haven")</code> etc.</p>
+<h3 id="loading-understanding-and-cleaning-our-data">Loading, Understanding and Cleaning our Data</h3>
+<p>Today, we load the full standard (cross-sectional) dataset from the Quality of Government Institute (this is a newer version that the one we used previously). This is a great data source for comparativist political science research. The codebook is available from their main  <a href="http://qog.pol.gu.se/data/datadownloads/qogstandarddata">website</a>. You can also find time-series and cross-section data sets on this page.</p>
+<p>The dataset is in stata format (<code>.dta</code>). Loading it requires the  <code>foreign</code>  library and the  <code>read.dta()</code>function which operates similar to  <code>read.csv()</code>.</p>
+<p>Let’s load the data set</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined"># load dataset in Stata format from online source
+world_data &lt;- read_dta("qog_std_cs_jan15.dta")
+
+# check the dimensions of the dataset
+dim(world_data)
+</code></pre>
+<p>The dataset contains many variables. We will select a subset of variables that we want to work with.</p>
+<p>We are interested in political stability. Specifically, we want to find out what predicts the level of political stability. Therefore,  <code>political_stability</code>  is our dependent variable (also called response variable, left-hand-side variable, explained/predicted variable).</p>
+<blockquote>
+<p><em>Our dependent variable</em>:<br>
+<code>wbgi_pse</code>  which we rename into  <code>political_stability</code>  (larger values mean more stability)</p>
+</blockquote>
+<p>We will also select a variable that identifies each row (observation) in the dataset uniquely:  <code>cname</code>  which is the name of the country.</p>
+<p>Potential predictors (independent variables, right-hand-side variables, covariates) are:</p>
+<ol>
+<li><code>lp_lat_abst</code>  is the distance to the equator which we rename into  <code>latitude</code></li>
+<li><code>dr_ig</code>  is an index for the level of globalization which we rename to  <code>globalization</code></li>
+<li><code>ti_cpi</code>  is Transparency International’s Corruptions Perceptions Index, renamed to  <code>institutions_quality</code>  (larger values mean better quality institutions, i.e. less corruption)</li>
+<li><code>chga_demo</code>  is a factor variable stating whether the relevant country is a democracy or not (with labels  <code>"1. Democracy"</code>  and  <code>"0. Dictatorship"</code>)</li>
+</ol>
+<p>But first, we rename the variables we care about like we have done previously:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">world_data &lt;- rename(world_data, country=cname,
+                   political_stability=wbgi_pse,
+                   latitude=lp_lat_abst,
+                   globalization=dr_ig,
+                   democracy=chga_demo,
+                   institutions_quality=ti_cpi)
+</code></pre>
+<p>Now, we take our subset.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">world_data &lt;- select(world_data, country, political_stability, latitude, globalization,democracy, institutions_quality)
+</code></pre>
+<p>Let’s make sure we’ve got everything we need</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">head(world_data)
+</code></pre>
+<pre><code>              country political_stability  latitude globalization
+1         Afghanistan          -2.5498192 0.3666667      31.46042
+2             Albania          -0.1913142 0.4555556      58.32265
+3             Algeria          -1.2624909 0.3111111      52.37114
+4             Andorra           1.3064846 0.4700000            NA
+5              Angola          -0.2163249 0.1366667      44.73296
+6 Antigua and Barbuda           0.9319394 0.1892222      48.15911
+        democracy institutions_quality
+1 0. Dictatorship                  1.4
+2    1. Democracy                  3.3
+3 0. Dictatorship                  2.9
+4    1. Democracy                   NA
+5 0. Dictatorship                  1.9
+6    1. Democracy                   NA
+</code></pre>
+<p>The democracy column has been loaded with a special class (related a stata labelled format) but we will convert this to a factor to make it easy to work with:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">world_data &lt;- mutate(world_data,democracy = factor(democracy,levels=c(0,1), labels=c("dictatorship","democracy")))
+</code></pre>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">head(world_data)
+</code></pre>
+<p>The function  <code>summary()</code>  lets you summarize data sets. We will look at the dataset now. When the dataset is small in the sense that you have few variables (columns) then this is a very good way to get a good overview. It gives you an idea about the level of measurement of the variables and the scale.  <code>country</code>, for example, is a character variable as opposed to a number. Countries do not have any order, so the level of measurement is categorical.</p>
+<p>If you think about the next variable, political stability, and how one could measure it you know there is an order implicit in the measurement: more or less stability. From there, what you need to know is whether the more or less is ordinal or interval scaled. Checking  <code>political_stability</code>  you see a range from roughly -3 to 1.5. The variable is numerical and has decimal places. This tells you that the variable is at least interval scaled. You will not see ordinally scaled variables with decimal places. Examine the summaries of the other variables and determine their level of measurement.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">summary(world_data)
+</code></pre>
+<pre><code>   country          political_stability    latitude      globalization
+ Length:193         Min.   :-3.10637    Min.   :0.0000   Min.   :24.35
+ Class :character   1st Qu.:-0.72686    1st Qu.:0.1444   1st Qu.:45.22
+ Mode  :character   Median :-0.01900    Median :0.2444   Median :54.99
+                    Mean   :-0.06079    Mean   :0.2865   Mean   :57.15
+                    3rd Qu.: 0.78486    3rd Qu.:0.4444   3rd Qu.:68.34
+                    Max.   : 1.57240    Max.   :0.7222   Max.   :92.30
+                                        NA's   :12       NA's   :12
+           democracy   institutions_quality
+    dictatorship: 74   Min.   :1.010
+    democracy   :118   1st Qu.:2.400
+    NA's        :  1   Median :3.300
+                       Mean   :3.988
+                       3rd Qu.:5.100
+                       Max.   :9.300
+                       NA's   :12
+</code></pre>
+<p>The variables  <code>latitude</code>,  <code>globalization</code>  and  <code>inst_quality</code>  have 12 missing values each marked as  <code>NA</code>.  <code>democracy</code>  has 1 missing value. Missing values could cause trouble because operations including an  <code>NA</code>  will produce  <code>NA</code>  as a result (e.g.:  <code>1 + NA = NA</code>). We will drop these missing values from our data set using the  <code>is.na()</code>  function and square brackets. The exclamation mark in front of  <code>is.na()</code>  means “not”. So, we keep all rows that are not NA’s on the variable  <code>latitude</code>.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined"># drop_na is from from library tidyr
+
+# usage:
+#        drop_na(data_frame, col1, col2, col3 ... )
+#        drops rows with na in col1 or col2 or col 3
+
+#        drop_na(data_frame)
+#        drops all rows with any na's
+
+world_data &lt;- drop_na(world_data,latitude)
+</code></pre>
+<p>Generally, we want to make sure we drop missing values only from variables that we care about.</p>
+<ul>
+<li>Now that you have seen how to do this, drop missings from  <code>globalization</code>,  <code>institutions_quality</code>, and  <code>democracy</code>  yourself by adding these columns after latitude in the call to <code>drop_na</code> and check that no <code>na</code> entries remain,</li>
+</ul>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">summary(world_data)
+</code></pre>
+<pre><code>   country          political_stability    latitude      globalization
+ Length:170         Min.   :-2.67338    Min.   :0.0000   Min.   :25.46
+ Class :character   1st Qu.:-0.79223    1st Qu.:0.1386   1st Qu.:46.05
+ Mode  :character   Median :-0.03174    Median :0.2500   Median :55.87
+                    Mean   :-0.12018    Mean   :0.2865   Mean   :57.93
+                    3rd Qu.: 0.66968    3rd Qu.:0.4444   3rd Qu.:69.02
+                    Max.   : 1.48047    Max.   :0.7222   Max.   :92.30
+           democracy   institutions_quality
+    dictatorship: 67   Min.   :1.400
+    democracy   :103   1st Qu.:2.500
+                       Median :3.300
+                       Mean   :4.050
+                       3rd Qu.:5.175
+                       Max.   :9.300
+</code></pre>
+<p>Let’s look at the output of  <code>summary(world_data)</code>  again and check the range of the variable  <code>latitude</code>. It is between  <code>0</code>  and  <code>1</code>. The codebook clarifies that the latitude of a country’s capital has been divided by  <code>90</code>  to get a variable that ranges from  <code>0</code>  to  <code>1</code>. This would make interpretation difficult. When interpreting the effect of such a variable a unit change (a change of  <code>1</code>) covers the entire range or put differently, it is a change from a country at the equator to a country at one of the poles.</p>
+<p><img src="https://uclspp.github.io/PUBLG100/img/latitude.png" alt=""></p>
+<p>We therefore multiply by  <code>90</code>  again. This will turn the units of the  <code>latitude</code>  variable into degrees again which makes interpretation easier.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined"># transform latitude variable
+world_data &lt;- mutate(world_data, latitude = latitude * 90)
+</code></pre>
+<h3 id="estimating-a-bivariate-regression">Estimating a Bivariate Regression</h3>
+<p>Is there a correlation between the distance of a country to the equator and the level of political stability? Both political stability (dependent variable) and distance to the equator (independent variable) are continuous. Therefore, we will get an idea about the relationship using a scatter plot.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">plot(political_stability ~ latitude, data = world_data)
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-173-1.png" alt=""></p>
+<p>Looking at the cloud of points suggests that there might be a positive relationship: increases in our independent variable  <code>latitude</code>  appear to be associated with increases in the dependent variable  <code>political_stability</code>  (the further from the equator, the more stable).</p>
+<p>We can fit a line of best fit through the points. To do this we must estimate the bivariate regression model with the  <code>lm()</code>  function and then plot the line using the  <code>abline()</code>  function.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">latitude_model &lt;- lm(political_stability ~ latitude, data = world_data)
+
+# add the line
+plot(political_stability ~ latitude, data = world_data)
+abline(latitude_model)
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-174-1.png" alt=""></p>
+<p>We can also view a simple summary of the regression by using the  <code>screenreg</code>  function:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined"># regression output
+screenreg(latitude_model)
+</code></pre>
+<pre><code>
+=======================
+             Model 1
+-----------------------
+(Intercept)   -0.58 ***
+              (0.12)
+latitude       0.02 ***
+              (0.00)
+-----------------------
+R^2            0.11
+Adj. R^2       0.10
+Num. obs.    170
+RMSE           0.89
+=======================
+*** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05
+</code></pre>
+<p>Thinking back to the bivariate linear regression, how can we interpret this regression ouput?</p>
+<ul>
+<li>The coefficient for the variable  <code>latitude</code>  (<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">\beta_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span>) indicates that a one-unit increase in a country’s latitude is associated with a  <code>0.02</code>  increase in the measure of political stability, on average. Question: Is this association statistically significant at the 95% confidence level?</li>
+<li>The coefficient for the  <code>(intercept)</code>  term (<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span>) indicates that the average level of political stability for a country with a latitude of 0 is  −0.58  (where  <code>latitude = 0</code>  is a country positioned at the equator)</li>
+<li>The  <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">R^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.00773em;">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span>  of the model is 0.11. This implies that 11% of the variation in the dependent variable (political stability) is explained by the independent variable (latitude) in the model.</li>
+</ul>
+<h3 id="multivariate-regression">5.1.3  Multivariate Regression</h3>
+<p>The regression above suggests that there is a significant association between these variables However we probably do not think that the distance of a country from the equator is a theoretically relevant variable for explaining political stability. This is because there is no plausible causal link between the two. We should therefore consider other variables to include in our model.</p>
+<p>We will include the index of globalization (higher values mean more integration with the rest of the world), the quality of institutions, and the indicator for whether the country is a democracy. For all of these variables we can come up with a theoretical story for their effect on political stability.</p>
+<p>To specify a  <em>multiple</em>  linear regression model, the only thing we need to change is what we pass to the  <code>formula</code>  argument of the  <code>lm()</code>  function. In particular, if we wish to add additional explanatory variables, the formula argument will take the following form:</p>
+<pre><code>dependent.variable ~ independent.variable.1 + independent.variable.2 ... independent.variable.k
+</code></pre>
+<p>where  <code>k</code>  indicates the total number of independent variables we would like to include in the model. In the example here, our model would therefore look like the following:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined"># model with more explanatory variables
+inst_model &lt;- lm(political_stability ~ latitude + globalization + institutions_quality + democracy,
+                 data = world_data)
+</code></pre>
+<p>Remember,  <code>political_stability</code>  is our dependent variable, as before, and now we have four independent variables:  <code>latitude</code>,  <code>globalization</code>,  <code>democracy</code>  and  <code>institutions_quality</code>. Again, just as with the bivariate model, we can view the summarised output of the regression by using  <code>screenreg()</code>. As we now have two models (a simple regression model, and a multiple regression model), we can join them together using the  <code>list()</code>  function, and then put all of that inside  <code>screenreg()</code>.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">screenreg(list(latitude_model, inst_model))
+</code></pre>
+<pre><code>
+============================================
+                      Model 1     Model 2
+--------------------------------------------
+(Intercept)            -0.58 ***   -1.25 ***
+                       (0.12)      (0.20)
+latitude                0.02 ***    0.00
+                       (0.00)      (0.00)
+globalization                      -0.00
+                                   (0.01)
+institutions_quality                0.34 ***
+                                   (0.04)
+democracyTRUE                       0.04
+                                   (0.11)
+--------------------------------------------
+R^2                     0.11        0.50
+Adj. R^2                0.10        0.49
+Num. obs.             170         170
+RMSE                    0.89        0.67
+============================================
+*** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05
+</code></pre>
+<p>Including the two new predictors leads to substantial changes.</p>
+<ul>
+<li>First, we now explain 50% of the variance of our dependent variable instead of just 11%.</li>
+<li>Second, the effect of the distance to the equator is no longer significant.</li>
+<li>Third, better quality institutions are associated with more political stability. In particular, a one-unit increase in the measure of institution quality (which ranges from 1 to 10) is associated with a 0.34 increase in the measure for political stability.</li>
+<li>Fourth, there is no significant relationship between globalization and political stability in this data.</li>
+<li>Fifth, there is no significant relationship between democracy and political stability in this data.</li>
+</ul>
+<h3 id="joint-significance-test-f-statistic">Joint Significance Test (F-statistic)</h3>
+<p>Whenever you add variables to your model, you will explain more of the variance in the dependent variable. That means, using your data, your model will better predict outcomes. We would like to know whether the difference (the added explanatory power) is statistically significant. The null hypothesis is that the added explanatory power is zero and the p-value gives us the probability of observing such a difference as the one we actually computed assuming that null hypothesis (no difference) is true.</p>
+<p>The F-test is a joint hypothesis test that lets us compute that p-value. Two conditions must be fulfilled to run an F-test:</p>
+<p>Conditions for F-test model comparison</p>
+<p>Both models must be estimated from the same sample! If your added variables contain lots of missing values and therefore your  <code>n</code>  (number of observations) are reduced substantially, you are not estimating from the same sample.</p>
+<p>The models must be nested. That means, the model with more variables must contain all of the variables that are also in the model with fewer variables.</p>
+<p>We specify two models: a restricted model and an unrestricted model. The restricted model is the one with fewer variables. The unrestricted model is the one including the extra variables. We say restricted model because we are “restricting” it to NOT depend on the extra variables. Once we estimated those two models we compare the residual sum of squares (RSS). The RSS is the sum over the squared deviations from the regression line and that is the unexplained error. The restricted model (fewer variables) is always expected to have a larger RSS than the unrestricted model. Notice that this is same as saying: the restricted model (fewer variables) has less explanatory power.</p>
+<p>We test whether the reduction in the RSS is statistically significant using a distribution called <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi></mrow><annotation encoding="application/x-tex">F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.68333em; vertical-align: 0em;"></span><span class="mord mathdefault" style="margin-right: 0.13889em;">F</span></span></span></span></span>-distribution. If it is, the added variables are jointly (but not necessarily individually) significant. You do not need to know how to calculate p-values from the <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi></mrow><annotation encoding="application/x-tex">F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.68333em; vertical-align: 0em;"></span><span class="mord mathdefault" style="margin-right: 0.13889em;">F</span></span></span></span></span>- distribution, as we can use the  <code>anova()</code>function in R to do this for us.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">anova(latitude_model, inst_model)
+</code></pre>
+<pre><code>Analysis of Variance Table
+
+Model 1: political_stability ~ latitude
+Model 2: political_stability ~ latitude + globalization + institutions_quality +
+    democracy
+  Res.Df     RSS Df Sum of Sq      F    Pr(&gt;F)
+1    168 133.121
+2    165  74.229  3    58.892 43.636 &lt; 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</code></pre>
+<p><img src="https://lh3.googleusercontent.com/RidU3AVuh2Mo5Szm18q0sBnwaI_Pq7TN98jPnS3Rl0JV2z4fLSTHM0N4XOt3fqwAIROAS_s27M5W" alt="" title="info_table">]<br>
+As we can see from the output, the p-value here is  <em>very</em>  small, which means that we can reject the null hypothesis that the unrestricted model has no more explanatory power than the restricted model.</p>
+<p>As we can see from the output, the p-value here is  <em>very</em>  small, which means that we can reject the null hypothesis that the unrestricted model has no more explanatory power than the restricted model.</p>
+<h3 id="predicting-outcome-conditional-on-institutional-quality">Predicting outcome conditional on institutional quality</h3>
+<p>Just as we did with the simple regression model last week, we can use the fitted model object to calculate the fitted values of our dependent variable for different values of our explanatory variables. To do so, we again use the  <code>predict()</code>  function.</p>
+<p>We proceed in three steps.</p>
+<ol>
+<li>We set the values of the covariates for which we would like to produce fitted values.
+<ul>
+<li>You will need to set covariate values for  <em>every</em>  explanatory variable that you included in your model.</li>
+<li>As only one of our variables has a significant relationship with the outcome in the multiple regression model that we estimated above, we are really only interested in that variable (<code>institutions_quality</code>).</li>
+<li>Therefore, we will calculate fitted values over the range of  <code>institutions_quality</code>, while setting the values of  <code>latitude</code>  and  <code>globalization</code>  to their mean values.</li>
+<li>As  <code>democracy</code>  is a factor variable, we cannot use the mean value. Instead, we will set  <code>democracy</code>  to be equal to  <code>"democracy"</code>  which is the label for democratic countries</li>
+</ul>
+</li>
+<li>We calculate the fitted values.</li>
+<li>We report the results (here we will produce a plot).</li>
+</ol>
+<p>For step one, the following code produces a  <code>data.frame</code>  of new covariate values for which we would like to calculate a fitted value from our model:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">## Set the values for the explanatory variables
+new_data_democracy &lt;- data.frame(institutions_quality = seq(from = 1.4, to = 9.3, by = 1),
+                        globalization = mean(world_data$globalization),
+                        latitude = mean(world_data$latitude),
+                        democracy = "democracy"
+                                     )
+</code></pre>
+<p>Here, we have set the  <code>institutions_quality</code>  variable to vary between 1.4 and 9.3, with increments of 1 unit. We have set  <code>globalization</code>  to be equal to the mean value of  <code>globalization</code>  in the  <code>world_data</code>  object, and  <code>latitude</code>  to be equal to the mean value of  <code>latitude</code>  in the  <code>world_data</code>object. Finally, we have set  <code>democracy</code>  to be equal to  <code>"democracy"</code>  (the value for democratic countries). We have then put all of these values into a new  <code>data.frame</code>  called  <code>new_data_democracy</code>  which we will pass to the  <code>predict()</code>  function.</p>
+<p>Before we do that, let’s just take a quick look at the  <code>new_data_democracy</code>  object:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">head(new_data_democracy)
+</code></pre>
+<pre><code>  institutions_quality globalization latitude democracy
+1                  1.4      57.93053 25.78218 democracy
+2                  2.4      57.93053 25.78218 democracy
+3                  3.4      57.93053 25.78218 democracy
+4                  4.4      57.93053 25.78218 democracy
+5                  5.4      57.93053 25.78218 democracy
+6                  6.4      57.93053 25.78218 democracy
+</code></pre>
+<p>As you can see, this has produced a data.frame in which every observation has a different value of  <code>institutions_quality</code>  but the same value for  <code>latitude</code>,  <code>globalization</code>, and  <code>democracy</code>.</p>
+<p>We can now calculate the fitted values for each of these combinations of our explanatory variables by passing the  <code>new_data_democracy</code>  object to the  <code>newdata</code>  argument of the  <code>predict()</code>  function.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined"># Calculate the fitted values
+pred &lt;- predict(inst_model, newdata = new_data_democracy)
+
+## Save the fitted values as a new variable in the new_data_democracy object
+
+new_data_democracy$political_stability.pred &lt;- pred
+</code></pre>
+<p>We can now look again at the  <code>new_data_democracy</code>  object:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">head(new_data_democracy)
+</code></pre>
+<pre><code>  institutions_quality globalization latitude democracy political_stability.pred
+1                  1.4      57.93053 25.78218 democracy   -1.00319887
+2                  2.4      57.93053 25.78218 democracy   -0.66431685
+3                  3.4      57.93053 25.78218 democracy   -0.32543483
+4                  4.4      57.93053 25.78218 democracy    0.01344719
+5                  5.4      57.93053 25.78218 democracy    0.35232921
+6                  6.4      57.93053 25.78218 democracy    0.69121123
+</code></pre>
+<p>Hey presto! Now, for each of our explanatory variable combinations, we have the corresponding fitted values as calculated from our estimated regression.</p>
+<p>Finally, we can plot these values:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">plot(
+  political_stability.pred ~ institutions_quality, # Specify the formula for the plot (dependent.variable ~ independent.variable)
+  data = new_data_democracy, # Specify the data to use for the plot
+  xlab = "Institution Quality", # Specify the X-axis title
+  ylab = "Fitted value for political stability", # Specify the Y-axis title
+  frame.plot = FALSE, # The frame.plot = FALSE argument removes the box from around the plot
+  col = "blue", # The col argument specifies the color
+  type = "l", # type = "l" will produce a line plot, rather than the default scatter plot
+  lwd = 3 # lwd = 3 will increase the thinkness of the line on the plot
+)
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-184-1.png" alt=""></p>
+<p>We can also extract the standard error in our predicted values using the <code>predict</code> function.</p>
+<p>Below, we will show you how you could illustrate the confidence interval around the prediction. We can include this using the option se.fit = TRUE which will return standard errors for the prediction as well.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">pred &lt;- predict(inst_model, newdata = new_data_democracy, se.fit = TRUE)
+</code></pre>
+<p>We can extract the standard error with the dollar sign and add them to our covariates dataset.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">new_data_democracy$political_stability.se &lt;- pred$se.fit
+</code></pre>
+<p>We can now construct lower bounds and upper bounds which are 1.96*SE from the predicted values:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">pred &lt;- predict(inst_model, newdata = new_data_democracy, se.fit = TRUE)
+</code></pre>
+<p>We can extract the standard error with the dollar sign and add them to our covariates dataset.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">new_data_democracy &lt;- mutate(new_data_democracy,
+ political_stability.ub = political_stability.pred + 1.96*political_stability.se,
+ political_stability.lb = political_stability.pred - 1.96*political_stability.se
+ )
+</code></pre>
+<p>Now, we can draw confidence intervals by adding additional lines onto or plot.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">plot(
+  political_stability.pred ~ institutions_quality, # Specify the formula for the plot (dependent.variable ~ independent.variable)
+  data = new_data_democracy, # Specify the data to use for the plot
+  xlab = "Institution Quality", # Specify the X-axis title
+  ylab = "Fitted value for political stability", # Specify the Y-axis title
+  frame.plot = FALSE, # The frame.plot = FALSE argument removes the box from around the plot
+  col = "blue", # The col argument specifies the color
+  type = "l", # type = "l" will produce a line plot, rather than the default scatter plot
+  lwd = 3 # lwd = 3 will increase the thinkness of the line on the plot
+)
+# add lines for confidence intervals
+# upper bound
+lines(x = new_data_democracy$institutions_quality,
+      y = new_data_democracy$political_stability.ub,
+      lty = "dashed", lwd = 1.5)
+# lower bound
+lines(x = new_data_democracy$institutions_quality,
+      y = new_data_democracy$political_stability.lb,
+      lty = "dashed", lwd = 1.5)
+</code></pre>
+<ul>
+<li>TASK: run the code above to create a plot showing the standard error range.</li>
+</ul>
+<p>We could also use the output from our model to plot two separate lines of fitted values: one for democracies, and one for dictatorships. We have already done this for democracies, so the following code constructs a  <code>data.frame</code>  of fitted values for dictatorships:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">## Set the values for the explanatory variables
+new_data_dictatorship &lt;- data.frame(institutions_quality = seq(from = 1.4, to = 9.3, by = 1),
+                                     globalization = mean(world_data$globalization),
+                                     latitude = mean(world_data$latitude),
+                                     democracy = "dictatorship"
+                                     )
+
+# Calculate the fitted values
+pred &lt;- predict(inst_model, newdata = new_data_dictatorship)
+
+## Save the fitted values as a new variable in the new_data_dictatorship object
+new_data_dictatorship$political_stability.pred &lt;- pred
+
+## Take a look at the output
+head(new_data_dictatorship)
+</code></pre>
+<pre><code>  institutions_quality globalization latitude    democracy
+1                  1.4      57.93053 25.78218 dictatorship
+2                  2.4      57.93053 25.78218 dictatorship
+3                  3.4      57.93053 25.78218 dictatorship
+4                  4.4      57.93053 25.78218 dictatorship
+5                  5.4      57.93053 25.78218 dictatorship
+6                  6.4      57.93053 25.78218 dictatorship
+  political_stability.pred
+1   -1.04148517
+2   -0.70260315
+3   -0.36372113
+4   -0.02483911
+5    0.31404291
+6    0.65292493
+</code></pre>
+<p>Now that we have calculated fitted values we can add the line for dictatorships to the plot we created above using the  <code>lines()</code>  function:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">## Create the same plot as above for fitted values over the range of institution quality for democracies
+plot(
+  political_stability.pred ~ institutions_quality, # Specify the formula for the plot (dependent.variable ~ independent.variable)
+  data = new_data_dictatorship, # Specify the data to use for the plot
+  xlab = "Institution Quality", # Specify the X-axis title
+  ylab = "Fitted value for political stability", # Specify the Y-axis title
+  frame.plot = FALSE, # The frame.plot = FALSE argument removes the box from around the plot
+  col = "blue", # The col argument specifies the color
+  type = "l", # type = "l" will produce a line plot, rather than the default scatter plot
+  lwd =3 # lwd = 3 will increase the thinkness of the line on the plot
+)
+
+## Add an additional line of fitted values over the range of institution quality for dictatorships
+lines(x = new_data_dictatorship$institutions_quality,
+      y = new_data_dictatorship$political_stability.pred,
+      col = "red",
+      lwd = 1)
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-186-1.png" alt=""></p>
+<p>We can see from the plot that the fitted values for democracies (blue line) are almost exactly the same as those for dictatorships (red line). This is reassuring, as the estimated coefficient on the democracy variable was very small (0.04) and was not statistically significantly different from 0. Often, however, it can be very illuminating to construct plots like this where we construct a line to indicate how our predicted values for Y vary across one of our explanatory variables (here, institution quality), and we create different lines for different values of another explanatory variable (here, democracy/dictatorship).</p>
+<h3 id="additional-resources">Additional Resources</h3>
+<p><a href="http://altaf.shinyapps.io/shiny-statistics">Visualizing Distributions</a></p>
+<h4 id="exercises">Exercises:</h4>
+<p>Use the High School and Beyond data set. We will try to predict the <code>science</code> score based on the other variables. (To see informative plots you will need to convert to factor variables as appropriate).</p>
+<ol>
+<li>Load the data and prepare the data (i.e. create factor variables, change column names).</li>
+<li>Build a bivariate model using <code>math</code> score alone to predict <code>science</code> score. Plot your fit and interpret the fit results: coefficient for <code>math</code> and  <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">R^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.00773em;">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span> value.</li>
+<li>Build a multivariate model using <code>math</code> and <code>gender</code>  to predict <code>science</code> score. Interpret the fit coefficients and and  <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">R^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.00773em;">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span> value.</li>
+<li>Make a plot of <code>science</code> vs <code>math</code> and add fit lines corresponding for <code>male</code> and <code>female</code> cases.</li>
+<li>Build a multivariate model using <code>math</code>, <code>read</code>, <code>gender</code>, and <code>race</code>  to predict <code>science</code> score. How have the different <code>race</code> categrories been included in the model. Interpret the coefficents for <code>race</code> and comment on the significance of the variable coefficients.</li>
+<li>Use the <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>F</mi></mrow><annotation encoding="application/x-tex">F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.68333em; vertical-align: 0em;"></span><span class="mord mathdefault" style="margin-right: 0.13889em;">F</span></span></span></span></span> test to compare the model from 5. with an extended model that includes the <code>write</code> score. Is there evidence that including this gives a  improvement at a alpha = 0.05 significance level.</li>
+</ol>
+</div>
+</body>
+
+</html>

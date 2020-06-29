@@ -1,0 +1,11 @@
+#way 1
+
+env = new.env()
+flowers = load('flowers.Rda', env)[1]
+flower_df = env[[flowers]]
+
+
+
+#way 2
+flowers = load('flowers.Rda')
+flowers_df2 = get(flowers)

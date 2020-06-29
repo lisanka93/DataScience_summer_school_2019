@@ -1,0 +1,46 @@
+---
+title: "High School Analysis"
+output: html_notebook
+---
+Load in libraries:
+```{r}
+library(dplyr)
+library(readxl)
+```
+
+Load in the data:
+
+```{r}
+student_data <- read_excel("hsb2.xlsx")
+head(student_data)
+```
+```{r}
+plot(student_data$science, student_data$math)
+```
+
+```{r}
+plot(science ~ math, data=student_data)
+```
+```{r}
+race_labels = c("hispanic","asian",
+                "afro_american","white")
+
+student_data <- mutate(student_data, 
+    race = factor(race, levels=c(1,2,3,4),
+                        labels=race_labels),
+    gender = factor(female, levels=c(0,1),
+                        labels=c("M","F")),
+    socioeconomic = factor(ses, levels=c(1,2,3),
+                        labels=c("L","M","H"))
+    )
+
+student_data <- select(student_data,-ses,-female)
+
+head(student_data)
+```
+```{r}
+plot(science ~ gender, data=student_data)
+```
+
+
+

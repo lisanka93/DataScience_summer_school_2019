@@ -1,0 +1,222 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>model answers t.test</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h2 id="t.test--solutions">T.test  Solutions</h2>
+<h4 id="section">1.</h4>
+<p>Turn former colonies into a factor variable and choose appropriate labels.</p>
+<p>First, we load the dataset and then factorise the former colonies variable.</p>
+<pre><code># load data
+library(readr)
+world_data &lt;- read_csv("QoG2012.csv")
+# check frequency table
+table(world_data$former_col) 
+# codebook says 1 stands for colonised
+</code></pre>
+<pre><code>  0   1 
+ 72 122 
+</code></pre>
+<pre><code># create factor variable
+world_data$former_col &lt;- factor(world_data$former_col, 
+  labels = c("not colonised", "was colonised"),   
+  levels = c(0,1))
+  
+# check if the variable was correctly transformed
+table(world_data$former_col)
+</code></pre>
+<pre><code>
+not colonised was colonised 
+           72           122 
+</code></pre>
+<h4 id="section-1">2.</h4>
+<p>How many countries were former colonies? How many were not?</p>
+<p>We can get the numbers from a frequency table.</p>
+<pre><code>table(world_data$former_col)
+</code></pre>
+<pre><code>
+not colonised was colonised 
+           72           122 
+</code></pre>
+<p>122 countries were victims of colonialization.</p>
+<h4 id="section-2">3.</h4>
+<p>Find the means of political stability in countries that (1) were former colonies, (2) were not former colonies.</p>
+<p>We use the mean function to get the mean of political stability and subset for the groups of countries using the square brackets.</p>
+<pre><code># mean of political stability in countries that were not colonised
+mean(world_data$stability[world_data$former_col=="not colonised"])
+</code></pre>
+<pre><code>[1] 0.2858409
+</code></pre>
+<pre><code># mean of political stability in countries that were colonised
+mean(world_data$stability[world_data$former_col=="was colonised"])
+</code></pre>
+<pre><code>[1] -0.231612
+</code></pre>
+<p>The average level of political stability in countries that were not colonised is 0.2858409. Mean political stability in countries that were colonised is -0.231612. The variable political stability  <code>stability</code>  is an index. Larger values correspond with more political stability. We see that political stability is higher in countries that were not colonised.</p>
+<p>Looking at this difference, we might conclude that the legacy of colonialism is still visible today and manifests itself in lower political stability. Let’s investigate further to see whether the difference in means is statistically significant.</p>
+<h4 id="section-3">4.</h4>
+<p>Is the the difference in means statistically significant?</p>
+<p>Let’s first compute the difference in means. We call it  <code>fd</code>  here. We could name it anything but  <code>fd</code>  is shorthand for first difference. Differences between two means are sometimes referred to as first differences.</p>
+<pre><code>fd &lt;- mean(world_data$stability[world_data$former_col=="not colonised"]) - mean(world_data$stability[world_data$former_col=="was colonised"])
+fd
+</code></pre>
+<pre><code>[1] 0.5174529
+</code></pre>
+<p>The numerical difference is 0.5174529. Is this difference small or large? That is difficult to say because the variable is not measured in intuitive units (income in dollars is an example of a variable that is measured in intuitive units).</p>
+<p>Let’s look at the variable a little closer to understand this difference in substantive terms.</p>
+<pre><code># the range
+range(world_data$stability)
+</code></pre>
+<pre><code>[1] -2.467461  1.675609
+</code></pre>
+<pre><code># the distance from the minimum to the maximum value
+diff(range(world_data$stability))
+</code></pre>
+<pre><code>[1] 4.14307
+</code></pre>
+<pre><code># the difference in means as percentage change over the range of the variable
+fd / diff(range(world_data$stability))
+</code></pre>
+<pre><code>[1] 0.124896
+</code></pre>
+<p>Doing the above was not necessary to answer the question (and is not a requirement for the midterm) but it is helpful to understand the variable in substantive terms. The difference in means is 0.5174529. That constitutes 0.124896 (12%) of the range of the variable. So the difference in political stability between countries that were colonies and those that were not is large.</p>
+<p>We now test whether the difference is statistically significant using the t-test.</p>
+<pre><code>t.test(world_data$stability ~ world_data$former_col, mu = 0, alt = "two.sided")
+</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  world_data$stability by world_data$former_col
+t = 3.4674, df = 139.35, p-value = 0.0006992
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 0.2224004 0.8125053
+sample estimates:
+mean in group not colonised mean in group was colonised 
+                  0.2858409                  -0.2316120 
+</code></pre>
+<p>As we can see, the difference is not only large it is also a noticeable systematic difference. The p value is small. Smaller than the conventional alpha level of 0.05. We can also look at the confidence interval which ranges from 0.2224004 to 0.8125053. So, if we were to repeatedly sample, the confidence interval of each sample would include the true population mean  95%  of the time. Or more intuitively, we are  95%confident that the average population level of political stability is within our interval.</p>
+<h4 id="section-4">5.</h4>
+<p>In layman’s terms, are countries which were former colonies more or less stable than those that were not?</p>
+<p>The results from the t-test show that countries that were colonies are less stable than those that were not. The difference is large and systematic.</p>
+<h4 id="section-5">6.</h4>
+<p>How about if we choose an alpha level of 0.01?</p>
+<p>The p-value is 0.0006992. That is smaller than an alpha level of 0.01 as well. Therefore, picking an alpha level of 0.01 does not change our results.</p>
+<h4 id="section-6">7.</h4>
+<p>What is the level of measurement of the United Nations Development index variable  <code>hdi</code>?</p>
+<p>We googled  <a href="http://hdr.undp.org/en/content/human-development-index-hdi">united nations human development index</a>  and found that the variable is a composite index of three key dimensions: a long and healthy life, being knowledgeable and having a decent standard of living. The description goes on to tell us how the dimensions are measured and that the index is the geometric average of the components. The variable is, therefore, continuous.</p>
+<h4 id="section-7">8.</h4>
+<p>Check the claim that its true population mean is 0.85.</p>
+<p>Let’s estimate the mean from our sample</p>
+<pre><code>hdi_mean &lt;- mean(world_data$hdi, na.rm = TRUE)
+hdi_mean
+</code></pre>
+<pre><code>[1] 0.69824
+</code></pre>
+<p>Our estimate is 0.69824. The claim is that it is 0.85.</p>
+<p>Null hypothesis: The true population mean of the human development index is: 0.85. Alternative hypothesis: The true population mean is different from 0.85.</p>
+<p>We pick an alpha level of 0.05 for our test.</p>
+<pre><code>t.test(world_data$hdi, mu = 0.85, alt = "two.sided")
+</code></pre>
+<pre><code>
+    One Sample t-test
+
+data:  world_data$hdi
+t = -11.139, df = 174, p-value &lt; 2.2e-16
+alternative hypothesis: true mean is not equal to 0.85
+95 percent confidence interval:
+ 0.6713502 0.7251298
+sample estimates:
+mean of x 
+  0.69824 
+</code></pre>
+<p>The p-value is lower than 0.05 and hence we reject the null hypothesis (hdi is 0.85). Looking at our confidence interval, we expect that if we were to repeatedly sample, the population mean would fall into the interval 0.6713502 to 0.7251298  95%  of the time.</p>
+<h4 id="section-8">9.</h4>
+<p>Discuss your findings in terms of the original claim. Interpret the t value, the p value, and the confidence interval.</p>
+<p>We can reject the original claim that the mean of HDI is 0.85.</p>
+<p>Given, an alpha level of 0.05, our large t-value (-11.1 - the absolute value is large) implies that our estimate (0.69824) is extremely unlikely assuming that 0.85 is the population mean. From exercise 11, we know the p-value which is the probability that we have mistakenly rejected a correct null hypothesis. That probability is</p>
+<p>4.3e−22=0.00000000000000000000043.</p>
+<p>Using the confidence interval we can say our best guess of the population mean is  0.70±0.03  (rounded to two digits).</p>
+<h4 id="section-9">10.</h4>
+<p>We claim, the difference in means in terms of political stability between countries that were former colonies and those that were not is 0.3. Check this hypothesis.</p>
+<p>We use the t-test for the difference in means to test this claim. Normally, our null would be that the difference in means is zero, i.e. there is no difference. Here, the claim is that the difference is 0.3. So, all we have to do is adjust the null hypothesis accordingly.</p>
+<pre><code>t.test(world_data$stability ~ world_data$former_col, mu = 0.3, alt = "two.sided")
+</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  world_data$stability by world_data$former_col
+t = 1.4571, df = 139.35, p-value = 0.1473
+alternative hypothesis: true difference in means is not equal to 0.3
+95 percent confidence interval:
+ 0.2224004 0.8125053
+sample estimates:
+mean in group not colonised mean in group was colonised 
+                  0.2858409                  -0.2316120 
+</code></pre>
+<p>We cannot reject the claim that the true difference in means is 0.3.</p>
+<h4 id="section-10">11.</h4>
+<p>An angry citizen who wants to defund the Department of International Development (DFID) claims that countries that were former colonies have reached 75%  of the level of wealth of countries that were not colonised. Check this claim.</p>
+<p>The null hypothesis is that there is no difference between the level of wealth in countries that were former colonies and 0.75 times the level of wealth in countries that were not former colonies</p>
+<pre><code># the claim of the citizen
+claim &lt;- mean(world_data$wdi_gdpc[world_data$former_col=="not colonised"], na.rm = TRUE) * 0.75 
+claim
+</code></pre>
+<pre><code>[1] 12311.54
+</code></pre>
+<pre><code># estimated level of wealth in countries that were colonised
+estimate &lt;- mean(world_data$wdi_gdpc[world_data$former_col=="was colonised"], na.rm = TRUE)
+estimate
+</code></pre>
+<pre><code>[1] 6599.714
+</code></pre>
+<p>Our estimate is roughly half the angry citizen’s claim. The substantial difference is huge. To cover all our bases, let’s perform the t-test for the difference in means.</p>
+<p>How would we do this though? This one is tricky because the citizen’s claim is not actually in our data. At the same time we don’t know the true level of wealth in countries that were not colonised, we only have an estimate. We have to manipulate our data to get there.</p>
+<p>First, we create a copy of the wealth variable with a new name.</p>
+<pre><code>world_data$angry_gdp &lt;- world_data$gdp
+</code></pre>
+<p>Now, we adjust the level of wealth in the group of countries that were not colonised down to the citizen’s claim. The citizen’s claim is that we should then not find a difference in means between the two groups (“was colonised” and “not colonised”) anymore.</p>
+<pre><code>world_data$angry_gdp[world_data$former_col=="not colonised"] &lt;- world_data$angry_gdp[world_data$former_col=="not colonised"] * 0.75
+mean(world_data$angry_gdp[world_data$former_col=="not colonised"], na.rm = TRUE)
+</code></pre>
+<pre><code>[1] 12311.54
+</code></pre>
+<p>We can see that the level of mean wealth of our manipulated variable for countries that were not colonised now corresponds to the citizen’s claim. We can now check the difference in means.</p>
+<pre><code>t.test(world_data$angry_gdp ~ world_data$former_col, mu = 0, alt = "two.sided")
+</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  world_data$angry_gdp by world_data$former_col
+t = 3.6218, df = 127.72, p-value = 0.0004206
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ 2591.29 8832.37
+sample estimates:
+mean in group not colonised mean in group was colonised 
+                  12311.544                    6599.714 
+</code></pre>
+<p>Clearly, we can reject the citizen’s claim. Our p value implies that the probability that we see this huge difference in our data, given that there really is no difference, is  0.04%. Our conventional alpha level is  5%.</p>
+<h4 id="correlation-exercise">Correlation exercise</h4>
+<pre><code>cor.test(~gdp+corruption,data=world_data)
+cor.test(~gdp+hdi,data=world_data)
+cor.test(~gdp+stability,data=world_data)
+cor.test(~gdp+abs_lat,data=world_data)
+cor.test(~corruption+hdi,data=world_data)
+cor.test(~corruption+stability,data=world_data)
+cor.test(~corruption+abs_lat,data=world_data)
+cor.test(~hdi+stability,data=world_data)
+cor.test(~hdi+abs_lat,data=world_data)
+cor.test(~stability+abs_lat,data=world_data)
+</code></pre>
+<p>We find all show non-zero correlation which is significant at the 95% level!</p>
+</div>
+</body>
+
+</html>

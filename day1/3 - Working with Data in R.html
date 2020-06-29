@@ -1,0 +1,400 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 1 edited</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="working-with-data-in-r">Working with Data in R</h1>
+<h4 id="command-history">Command History</h4>
+<p>Hitting the up arrow multiple times will display the previous commands, which can then be edited. This is useful since one often wishes to repeat a similar command.</p>
+<h4 id="matrices">Matrices</h4>
+<p>A vector stores data in a 1-dimensional structure with a single index (item number). However R can also be used to work with matrices. Note that in R each item in either a vector and matrix objects must be of a single type, e.g. <code>int</code>, <code>numeric</code>, <code>character</code>.</p>
+<p><span class="katex--display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>vector&nbsp;</mtext><mi>v</mi><mo>=</mo><mo stretchy="false">[</mo><mn>1</mn><mo separator="true">,</mo><mn>2</mn><mo separator="true">,</mo><mn>6</mn><mo separator="true">,</mo><mn>3</mn><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex"> \text{vector}~v = [1,2,6,3]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.61508em; vertical-align: 0em;"></span><span class="mord text"><span class="mord">vector</span></span><span class="mspace nobreak">&nbsp;</span><span class="mord mathdefault" style="margin-right: 0.03588em;">v</span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 1em; vertical-align: -0.25em;"></span><span class="mopen">[</span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right: 0.166667em;"></span><span class="mord">2</span><span class="mpunct">,</span><span class="mspace" style="margin-right: 0.166667em;"></span><span class="mord">6</span><span class="mpunct">,</span><span class="mspace" style="margin-right: 0.166667em;"></span><span class="mord">3</span><span class="mclose">]</span></span></span></span></span></span></p>
+<p><span class="katex--display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>matrix&nbsp;</mtext><mi>m</mi><mo>=</mo><mrow><mo fence="true">[</mo><mtable rowspacing="0.15999999999999992em" columnspacing="1em"><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mn>1</mn></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mn>2</mn></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mn>6</mn></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mn>3</mn></mstyle></mtd></mtr></mtable><mo fence="true">]</mo></mrow></mrow><annotation encoding="application/x-tex"> \text{matrix}~m =  \begin{bmatrix}  
+1 &amp; 2 \\  
+6 &amp; 3  
+\end{bmatrix}  </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.66786em; vertical-align: 0em;"></span><span class="mord text"><span class="mord">matrix</span></span><span class="mspace nobreak">&nbsp;</span><span class="mord mathdefault">m</span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 2.40003em; vertical-align: -0.95003em;"></span><span class="minner"><span class="mopen delimcenter" style="top: 0em;"><span class="delimsizing size3">[</span></span><span class="mord"><span class="mtable"><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 1.45em;"><span class="" style="top: -3.61em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord">1</span></span></span><span class="" style="top: -2.41em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord">6</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.95em;"><span class=""></span></span></span></span></span><span class="arraycolsep" style="width: 0.5em;"></span><span class="arraycolsep" style="width: 0.5em;"></span><span class="col-align-c"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 1.45em;"><span class="" style="top: -3.61em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord">2</span></span></span><span class="" style="top: -2.41em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.95em;"><span class=""></span></span></span></span></span></span></span><span class="mclose delimcenter" style="top: 0em;"><span class="delimsizing size3">]</span></span></span></span></span></span></span></span></p>
+<p>To create a matrix in R  use the <code>matrix()</code> function. Before we use the <code>matrix()</code> function, we can learn more about it using the help functionality:</p>
+<pre><code>?matrix
+</code></pre>
+<p>The help file reveals that the <code>matrix()</code> function takes a number of inputs, but for now we focus on the first three: the data (the entries in the matrix), the number of rows, and the number of columns. First, we create a simple matrix.</p>
+<pre><code>x &lt;- matrix(data=c(1,2,3,4), nrow=2, ncol=2) 
+x
+</code></pre>
+<pre><code>     [ ,1] [ ,2] 
+[1,]    1     3 
+[2,]    2     4
+</code></pre>
+<p>Note that we could just as well omit typing <code>data=, nrow=, and ncol=</code> in the <code>matrix()</code> command above: that is, we could just type</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">x &lt;- matrix(c(1,2,3,4) ,2,2)
+</code></pre>
+<p>and this would have the same effect. However, it can sometimes be useful to specify the names of the arguments passed in, since otherwise R will assume that the function arguments are passed into the function in the same order that is given in the function’s help file. As this example illustrates, by default R creates matrices by successively filling in columns. Alternatively, the <code>byrow=TRUE</code> option can be used to populate the matrix in order of the rows.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">matrix(c(1,2,3,4),2,2,byrow=TRUE)
+</code></pre>
+<pre><code>     [ ,1] [ ,2]
+[1,]    1     2 
+[2,]    3     4
+</code></pre>
+<h4 id="working-with-matrices">Working with Matrices</h4>
+<p>Suppose that our data is stored in the matrix <code>A</code>.</p>
+<pre><code>A &lt;- matrix(1:16,4,4) 
+A
+</code></pre>
+<pre><code>     [,1] [,2] [,3] [,4]
+[1,]    1    5    9   13
+[2,]    2    6   10   14
+[3,]    3    7   11   15
+[4,]    4    8   12   16
+</code></pre>
+<p>The <code>dim()</code> function outputs the number of rows followed by the number of columns of a given matrix.</p>
+<pre><code>dim(A) 
+</code></pre>
+<pre><code>[1] 4 4
+</code></pre>
+<p>We can make a selection from a matrix just as we did for vectors, but must specify two values. For example:</p>
+<pre><code>A[2,3]
+</code></pre>
+<pre><code>[1] 10
+</code></pre>
+<p>will select the element corresponding to the second row and the third column. The first number after the open-bracket symbol <code>[</code> always refers to the row, and the second number always refers to the column. We can also select multiple rows and columns at a time, by providing vectors as the indices.</p>
+<p>Try to work out what the following commands will select. Check your understanding by running them in R:</p>
+<ol>
+<li><code>A[c(1,3),c(2,4)]</code></li>
+</ol>
+<!-- ```&#10;     [,1] [,2]&#10;[1,]    5   13&#10;[2,]    7   15&#10;``` -->
+<ol start="2">
+<li><code>A[1:3,2:4]</code></li>
+</ol>
+<!--  ```&#10;     [,1] [,2] [,3]&#10;[1,]    5    9   13&#10;[2,]    6   10   14&#10;[3,]    7   11   15&#10;``` -->
+<p>The next examples include either no index for the columns or no index for the rows. These indicate that R should include all columns or all rows, respectively. R treats a single row or column of a matrix as a vector.</p>
+<ol start="3">
+<li><code>A[1:2,]</code></li>
+</ol>
+<!--  ```&#10;     [,1] [,2] [,3] [,4]&#10;[1,]    1    5    9   13&#10;[2,]    2    6   10   14&#10;```   -->
+<ol start="4">
+<li><code>A[,1:2]</code></li>
+</ol>
+<!--  ```&#10;     [,1] [,2]&#10;[1,]    1    5&#10;[2,]    2    6&#10;[3,]    3    7&#10;[4,]    4    8&#10;```  -->
+<ol start="5">
+<li><code>A[1,]</code></li>
+</ol>
+<!--  ```&#10;[1] 1 5 9 13&#10;``` -->
+<p>The use of a negative sign <code>-</code> in the index tells R to keep all rows or columns except those indicated in the index.</p>
+<ol start="6">
+<li><code>A[-c(1,3),]</code></li>
+</ol>
+<!-- ```&#10;     [,1] [,2] [,3] [,4]&#10;[1,]    2    6   10   14&#10;[2,]    4    8   12   16&#10;```  -->
+<ol start="7">
+<li><code>A[-c(1,3),-c(1,3,4)]</code></li>
+</ol>
+<!--```&#10;[1] 6 8&#10;``` --> 
+<h4 id="data-frames">Data frames</h4>
+<p>In general our dataset may contain a mixture of number, text and category variables. To be able to work with this R provides the <em>data frame</em> object class.</p>
+<p>For example suppose we have the following data set of student grades:</p>
+
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>student_id</th>
+<th>grade</th>
+<th>gender</th>
+<th>teacher</th>
+<th>age</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lauren</td>
+<td>100213</td>
+<td>78.6</td>
+<td>F</td>
+<td>Mr Smith</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Marcelino</td>
+<td>100214</td>
+<td>83</td>
+<td>M</td>
+<td>Mr Smith</td>
+<td>19</td>
+</tr>
+<tr>
+<td>Ramona</td>
+<td>100215</td>
+<td>60.2</td>
+<td>F</td>
+<td>Mr Smith</td>
+<td>18</td>
+</tr>
+<tr>
+<td>Lonna</td>
+<td>100216</td>
+<td>65.6</td>
+<td>F</td>
+<td>Mr Smith</td>
+<td>22</td>
+</tr>
+</tbody>
+</table><p>We see each column contains a single type of data, and so we could store them individually as vectors:</p>
+<pre><code>name &lt;- c("Lauren", "Marcelino", "Ramona")
+student_id &lt;- c(100213, 100214, 100215)
+grade &lt;- c(78.6, 83, 60.2)
+gender &lt;- c("F", "M", "F")
+teacher &lt;- c("Mr Smith", "Ms Clarke", "Mr Smith")
+age &lt;- c(20, 19, 18)
+</code></pre>
+<p>We can then use these to build a data frame object:</p>
+<pre><code>grades_df &lt;- data.frame(name, student_id, grade, gender, teacher, age)
+</code></pre>
+<p>Here we use the <code>data.frame()</code> function and pass the set of vectors that form the columns of the dataset.  To view the data frame we have created we can use the print command:</p>
+<pre><code>print(grades_df)
+</code></pre>
+<pre><code>       name student_id grade  gender   teacher age
+1    Lauren     100213   78.6      F  Mr Smith  20
+2 Marcelino     100214   83.0      M Ms Clarke  19
+3    Ramona     100215   60.2      F  Mr Smith  18
+</code></pre>
+<p>Other useful functions to view data frame information are:</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>head()</code></td>
+<td>prints only the first few rows (useful for big data sets.</td>
+</tr>
+<tr>
+<td><code>View()</code></td>
+<td>opens a view of the data frame in an RStudio panel (similar to a spreadsheet view).</td>
+</tr>
+<tr>
+<td><code>names()</code></td>
+<td>show the column names</td>
+</tr>
+<tr>
+<td><code>str()</code></td>
+<td>shows the structure of the data frame.</td>
+</tr>
+</tbody>
+</table><p>In this case let’s look at the structure of the data frame we have created:</p>
+<pre><code>str(grades_df)
+</code></pre>
+<pre><code>'data.frame':	3 obs. of  6 variables:
+ $ name      : Factor w/ 3 levels "Lauren","Marcelino",..: 1 2 3
+ $ student_id: num  1e+05 1e+05 1e+05
+ $ grade     : num  78.6 83 60.2
+ $ gender    : Factor w/ 2 levels "F","M": 1 2 1
+ $ teacher   : Factor w/ 2 levels "Mr Smith","Ms Clarke": 1 2 1
+ $ age       : num  20 19 18
+</code></pre>
+<p>We can see that R has created the columns with numerical data types for our numerical data, and  Factor (categorical) data types from the text vectors. The category types are noted as the Factors <strong><code>levels</code></strong>.</p>
+<p>Note in this case <code>name</code> is not a category that can be used to group students (unlike <code>gender</code> or <code>teacher</code>) so would be better stored as a <code>character</code>  data type.</p>
+<p>Its important to store data in appropriate data types, for example R will use this information to produce appropriate plots types when displaying data.</p>
+<p>Data frames also have row labels. We can see these using the <code>rownames</code> function:</p>
+<pre><code>rownames(grades_df)
+</code></pre>
+<pre><code>[1] "1" "2" "3"
+</code></pre>
+<p>By default we see these row labels were set to be text strings <code>"1"</code>, <code>"2"</code>, <code>"3"</code>, etc,</p>
+<h4 id="selecting-data">Selecting data</h4>
+<p>Data frames are 2-dimensional so can make selections using row and column indices in the same way as we did for <code>matrix</code> objects.</p>
+<p>Try out and check you understand the output of the following commands:</p>
+<pre><code>grades_df[2,3]
+</code></pre>
+<pre><code>grades_df[1,1:3]
+</code></pre>
+<pre><code>grades_df[3,]
+</code></pre>
+<pre><code>grades_df[,-2]
+</code></pre>
+<p>Where selections return a set of data the result is given as another data frame object (displayed with column names, and row names) or a vector if the selection is of a single column.</p>
+<p>We can also make selections using column or row labels. Try the following:</p>
+<pre><code>grades_df["2","grade"]
+</code></pre>
+<pre><code>grades_df[,"teacher"]
+</code></pre>
+<pre><code>grades_df[,c("name","grade")]
+</code></pre>
+<p>Note the following command does not work:</p>
+<pre><code>grades_df[,-c("teacher","student_id")]
+</code></pre>
+<h4 id="section">$</h4>
+<p>R provides a useful shortcut for accessing columns from a data frame using <code>$</code>:</p>
+<pre><code>grades_df$grade
+</code></pre>
+<pre><code>[1] 78.6 83.0 60.2
+</code></pre>
+<p>Now that we know how to select a column we can select the student id numbers and use these to overwrite the default row labels:</p>
+<pre><code>rownames(grades_df) &lt;- grades_df$student_id
+head(grades_df)
+</code></pre>
+<pre><code>            name student_id grade gender   teacher age
+100213    Lauren     100213  78.6      F  Mr Smith  20
+100214 Marcelino     100214  83.0      M Ms Clarke  19
+100215    Ramona     100215  60.2      F  Mr Smith  18
+</code></pre>
+<p>We can now remove the <code>student_id</code> column. We do this by selecting all columns except column 2, and storing this back into <code>grade_df</code> (this overwrites the original data frame).</p>
+<pre><code>grade_df &lt;- grade_df[,-2]
+head(grades_df)
+</code></pre>
+<pre><code>            name grade gender   teacher age
+100213    Lauren  78.6      F  Mr Smith  20
+100214 Marcelino  83.0      M Ms Clarke  19
+100215    Ramona  60.2      F  Mr Smith  18
+</code></pre>
+<p>Finally let’s correct the data type of the names column, so it is set to store <code>character</code> rather than <code>Factor</code> data.</p>
+<p>We can convert a data type using a command like the following:</p>
+<pre><code>as.character(grades_df$name)
+</code></pre>
+<pre><code>[1] "Lauren"    "Marcelino" "Ramona"   
+</code></pre>
+<p>and to convert a column, we overwrite it with the corrected data:</p>
+<pre><code>grades_df$name  &lt;- as.character(grades_df$name)
+str(grades_df)
+</code></pre>
+<pre><code>'data.frame':	3 obs. of  5 variables:
+ $ name   : chr  "Lauren" "Marcelino" "Ramona"
+ $ grade  : num  78.6 83 60.2
+ $ gender : Factor w/ 2 levels "F","M": 1 2 1
+ $ teacher: Factor w/ 2 levels "Mr Smith","Ms Clarke": 1 2 1
+ $ age    : num  20 19 18
+</code></pre>
+<h4 id="graphics">Graphics</h4>
+<p>The <code>plot()</code> function is the default command to plot data in R. For instance, <code>plot(x,y)</code> produces a scatterplot of the numbers in <code>x</code> versus the numbers in <code>y</code>. There are many additional options that can be passed in to the <code>plot()</code> function. For example, passing in the argument <code>xlab</code> will result in a label on the x-axis.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">x &lt;- rnorm(100)
+y &lt;- rnorm(100)
+plot(x,y)
+plot(x, y, xlab = "this is the x-axis",
+       ylab = "this is the y-axis",
+       main = "Plot of X vs Y")
+</code></pre>
+<p>We will often want to save the output of an R plot. One easy way to do this is using the <strong>export</strong> option in RStudio’s plots pane menu. From this we can save the image or copy it to the clipboard, so it can be pasted into another application.</p>
+<p>We can also save an image to disk. The command that we use to do this will depend on the file type that we would like to create. For instance, to create a <code>png</code>, we use the <code>png()</code> function, and to create a pdf, we use the <code>pdf()</code> function.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">png("my_firstigure.png")
+plot(x,y,col="green") 
+dev.off()
+</code></pre>
+<p>The function <code>dev.off()</code> indicates to R that we are done creating the plot.</p>
+<p>The <code>par</code> command lets us specify graphics parameters. One useful parameter is <code>mfrow</code> which defines a plot arrangment in the figure:</p>
+<pre><code>par(mfrow=c(1,2))
+</code></pre>
+<p>The two numbers here specify the number of plots in our figure by row and column. Now if we draw two plots they appear side by side:</p>
+<pre><code>plot(x, col="green") 
+plot(y, col="blue") 
+</code></pre>
+<p>Note to reset to a single plot in each figure run command <code>par(mfrow=c(1,1))</code>.</p>
+<h4 id="loading-the-auto-dataset">Loading the <code>Auto</code> dataset</h4>
+<p>We will be working with a dataset used in the <em>Introduction to Statistical Learning in R</em> textbook. The authors have provided an R <em>package</em> that can be used to access these. To install this package type the following:</p>
+<pre><code>install.packages("ISLR")
+</code></pre>
+<p>You should see the following that indicates the package has been downloaded and installed successfully.</p>
+<pre><code>trying URL 'https://cran.rstudio.com/bin/macosx/el-capitan/contrib/3.5/ISLR_1.2.tgz'
+Content type 'application/x-gzip' length 2924917 bytes (2.8 MB)
+==================================================
+downloaded 2.8 MB
+</code></pre>
+<p>You only need to download a package once, but each time you want to use it you must tell R to load the package into the workspace environment using the <code>library</code> command:</p>
+<pre><code>library(ISLR)
+</code></pre>
+<p>This then let’s us to load the example <em>ISLR</em> <code>Auto</code> dataset:</p>
+<pre><code>data(Auto)
+</code></pre>
+<p>Let’s explore the dataset. First we check what it contains:</p>
+<pre><code>dim(Auto) 
+</code></pre>
+<pre><code>[1] 392 9
+</code></pre>
+<p>The <code>dim()</code> function tells us that the data has 392 observations, or rows, and 9 variables, or columns.<br>
+Let’s use <code>names()</code> to check the column names.</p>
+<pre><code>names(Auto)
+</code></pre>
+<pre><code>[1] "mpg"          "cylinders"    "displacement"
+[4] "horsepower"   "weight"       "acceleration"
+[7] "year"         "origin"       "name"          
+</code></pre>
+<p>As this has been loaded from a package we can use the <code>help</code> function to read more about the data set.</p>
+<pre><code>?Auto
+</code></pre>
+<p>and we can use the <code>View</code>a function to display it in an RStudio panel.</p>
+<pre><code>View(Auto)
+</code></pre>
+<h4 id="additional-graphical-and-numerical-summaries">Additional Graphical and Numerical Summaries</h4>
+<p>We can use the <code>plot()</code> function to produce scatterplots of the quantitative variables. However, simply typing the column names will produce an error message, because R does not know to look in the <code>Auto</code> data set for those column names.</p>
+<pre><code>plot(cylinders, mpg)
+</code></pre>
+<pre><code>Error in plot(cylinders , mpg) : object ’cylinders ’ not found
+</code></pre>
+<p>To refer to a column, we must type the data set and the variable name joined with a <code>$</code> symbol.</p>
+<pre><code>plot(Auto$cylinders, Auto$mpg )
+</code></pre>
+<p>Note: use autocomplete to save typing and avoid typos.</p>
+<p>The <code>cylinders</code> column is stored as a numeric vector, so R has treated it as quantitative. However, since there are only a small number of possible values for cylinders, one may prefer to treat it as a qualitative variable. The <code>as.factor()</code> function converts quantitative variables into qualitative variables (i.e. stored as a set of categories).</p>
+<pre><code>Auto$cylinders=as.factor(Auto$cylinders)
+</code></pre>
+<p>If the variable plotted on the x-axis is categorial, then boxplots will automatically be produced by the <code>plot()</code> function. As usual, a number of options can be  specified in order to customize the plots.</p>
+<p>Try out the following commands:</p>
+<pre><code>plot(Auto$cylinders, Auto$mpg, ylab ="MPG")
+plot(Auto$cylinders, Auto$mpg, col="red")
+plot(Auto$cylinders, Auto$mpg, col="red", varwidth=T)
+plot(Auto$cylinders, Auto$mpg, col="red", varwidth=T,horizontal=T)
+plot(Auto$cylinders, Auto$mpg, col="red", varwidth=T, xlab="cylinders",
+</code></pre>
+<p>The <code>hist()</code> function can be used to plot a histogram. Note that <code>col=2</code> has the same effect as <code>col="red"</code>.</p>
+<pre><code>hist(Auto$mpg)
+hist(Auto$mpg,col=2)
+hist(Auto$mpg,col=2,breaks=15)
+</code></pre>
+<p>The <code>pairs()</code> function creates a scatterplot matrix i.e. a scatterplot for every pair of variables for any given data set.</p>
+<pre><code>pairs(Auto)
+</code></pre>
+<p>We can also produce scatterplots for just a subset of the variables.</p>
+<pre><code>pairs(∼ mpg + displacement + horsepower + weight +
+acceleration, Auto)
+</code></pre>
+<p>In conjunction with the <code>plot()</code> function, <code>identify()</code> provides a useful interactive method for identifying the value for a particular variable for points on a plot. We pass in three arguments to <code>identify()</code>:</p>
+<ul>
+<li>the x-axis variable,</li>
+<li>the y-axis variable,</li>
+<li>and the variable whose values we would like to see printed.</li>
+</ul>
+<p>After we call <code>identify</code> we can click on the points we are interested on the displayed plot. Once we are finished selecting points, we end by pressing the <code>escape</code> key, and R then adds the annotated information onto the plot. In the console it also displays the row numbers of the selected data points.</p>
+<p>Note: <em>This can be particularly useful to identify any outliers in our data.</em></p>
+<pre><code>plot(Auto$horsepower ,Auto$mpg)
+identify(Auto$horsepower, Auto$mpg, Auto$name)
+</code></pre>
+<p>The <code>summary()</code> function produces a numerical summary of each variable in a particular data set</p>
+<pre><code>summary(Auto) 
+</code></pre>
+<pre class=" language-summary"><code class="prism (Auto) language-summary">      mpg          cylinders      displacement  
+ Min.   : 9.00   Min.   :3.000   Min.   : 68.0  
+ 1st Qu.:17.00   1st Qu.:4.000   1st Qu.:105.0  
+ Median :22.75   Median :4.000   Median :151.0  
+ Mean   :23.45   Mean   :5.472   Mean   :194.4  
+ 3rd Qu.:29.00   3rd Qu.:8.000   3rd Qu.:275.8  
+ Max.   :46.60   Max.   :8.000   Max.   :455.0  
+
+...                                                
+</code></pre>
+<p>We can also produce a summary of just a single column.</p>
+<pre><code>summary(Auto$mpg)
+</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   9.00   17.00   22.75   23.45   29.00   46.60 
+</code></pre>
+<p>For qualitative variables such as <code>name</code>, R will list the number of observations that fall in each category.</p>
+</div>
+</body>
+
+</html>

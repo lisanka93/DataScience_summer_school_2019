@@ -1,0 +1,74 @@
+---
+title: "Model Performance"
+output:
+  html_document:
+    df_print: paged
+---
+
+Where we have a number of variables that may be used as predictors we want a way to find which set of predictors will provide a best fit.
+
+- too many predictors in our model can mean we overfit our training data, leading to poor real world results
+- too few predictors in our model and we may leave out a variable that can explain some real world variability
+
+To test the performance of our fit we can use a number of parameters:
+
+```{r}
+library(MASS)
+lm.1 <- lm(Boston$medv~Boston$lstat,data=Boston)
+summary(lm.1)
+# str(summary(lm.1))
+# tells us what is in the object
+# can be useed to extract values
+```
+
+### Rsquared / MSE / RMSE
+
+These are measures of residuals after a fit. If measured on the data used to fit the model these may be biased (give better estimation of the fit quality) compared to the case where they are calculated by applying the fit to new data. 
+
+#### Rsquared 
+(summed squared of residuals) /  (variance). On fitted points the maximum possible value = 1, when fitted values exactly macth actual values (explain 100% of the variance in the responce), and minimum value = 0 where fit has made no improvement to the residuals.  
+```{r}
+rsq = summary(lm.1)$r.squared
+rsq
+```
+
+#### MSE
+Mean Squared Error. Mean value of the squared residuals.
+```{r}
+mean(residuals(lm.1)^2)
+```
+
+#### RMSE
+Root Mean Squared Error. Square root of MSE - has same units as response so easier to interpret.
+```{r}
+sqrt(mean(residuals(lm.1)^2))
+```
+
+#### Statistical measures that account for number of predictors/coefficients in model:
+
+The following include a penalty to account for the number of fit inputs, so they will be unbiased (give a good estimate of the fit performance on new data) under the statistical assumptions of a linear fit. Therefore these are prefered when measuring or comparing fit performance.
+
+#### Adjusted Rsquared
+Adjusts Rsquared to penalise for the number of predictors used. The more predictors used, the higher the penalty. Every additional predictor used in a fit will by definition increase the Rsquared, but due to the penalty applied for more predictors can lead to a decrease in Adjusted Rsquared, allowing us to better compare models with different numbers of predictors and optimise our model.
+
+```{r}
+adj_rsq = summary(lm.1)$adj.r.squared
+adj_rsq
+```
+
+#### AIC  
+Akaike information criterion. lower value = better fit. Measures how much of the information in the response is captured by the fitted values predicted by the model. Developed by Akaike.
+```{r}
+AIC(lm.1)
+```
+
+#### BIC
+Bayesian information criterion. lower value = better fit. Measures how much of the information in the response is captured by the fitted values predicted by the model. Developed by Schwartz using Bayseian probability theory.
+
+```{r}
+BIC(lm.1)
+```
+
+Any of the above measures can be used to compare model performance, (statisticians may argue over which is best for a particular application).
+
+

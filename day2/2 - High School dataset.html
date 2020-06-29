@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day 2 Task 2</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p><strong>Day 2 – Task 2</strong></p>
+<p>Open the High School and Beyond xls data using the R starter script provided (see the resources folder for the data and information about the contents).</p>
+<ol>
+<li>
+<p>Look at all the commands in the start script and add comments to explain what they do.</p>
+</li>
+<li>
+<p>Now work in pairs to create an R notebook file that shows examples of how to use some functions from the  <code>dplyr</code> package, demonstrating how they can be used for the High School data set.</p>
+</li>
+</ol>
+<p>To use this you may need to install <code>dplyr</code></p>
+<pre><code>install.packages("dplyr")
+</code></pre>
+<p>Once you have installed <code>dplyr</code> you will need to load it into the R environment:</p>
+<pre><code>library(dplyr)
+</code></pre>
+<p>You can look into the help files (e.g. <code>?select</code>) or search (e.g. <code>dplyr</code> tutorial) to find out how to use the commands:</p>
+<p>A.</p>
+<ul>
+<li><code>select()</code> picks variables based on their names.</li>
+<li><code>filter()</code> picks cases based on their values.</li>
+<li><code>mutate()</code> adds new variables that are functions of existing variables</li>
+</ul>
+<p>B.</p>
+<ul>
+<li><code>arrange()</code> changes the ordering of the rows.</li>
+<li><code>group_by()</code> which allows you to perform operations “by group”</li>
+<li><code>summarise()</code> reduces multiple values down to a single summary.</li>
+<li>Can you work out how to produce the following summary information of grouped data: mean, count, max, min, standard deviation.</li>
+</ul>
+</div>
+</body>
+
+</html>

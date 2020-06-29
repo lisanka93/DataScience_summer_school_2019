@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starting Out in R Exercises E</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p><strong>Exercises E.</strong></p>
+<p>Copy and paste the R code to set up the students and grades data:</p>
+<pre><code>students &lt;- c( "Lauren",  "Marcelino", ..
+grades &lt;- c(78, 83, 60, ... 
+</code></pre>
+<p>Using the R commands we have been using answer the following:</p>
+<ol>
+<li>What was the mean grade?</li>
+</ol>
+<pre><code>mean(grades)
+[1] 66.02857
+</code></pre>
+<ol start="2">
+<li>What was the maximum grade?</li>
+</ol>
+<pre><code>max(grades)
+[1] 86
+</code></pre>
+<ol start="3">
+<li>How many students scored over 70 or higher?</li>
+</ol>
+<pre><code>sum(grades&gt;=70)
+[1] 10
+</code></pre>
+<ol start="4">
+<li>What were the scores that were below 60?</li>
+</ol>
+<pre><code>grades[grades&lt;60]
+[1] 56 55 55 59 54 48 59 58 59
+</code></pre>
+<ol start="5">
+<li>What were the names of the students that were below 60? Hint: Use the <code>which</code> command.</li>
+</ol>
+<pre><code>students[which(grades&lt;60)]
+[1] "Marquitta" "Jesusa"    "Rosendo"   "Setsuko"   "Sherell"  
+[6] "Denae"     "Milissa"   "Maren"     "Josiah"
+</code></pre>
+<ol start="6">
+<li>Create the lists <code>good_grades</code> and <code>good_students</code> containing the data of the students who scored more than the average grade.</li>
+</ol>
+<pre><code>av_grade &lt;- mean(grades)
+good_grades &lt;- grades[which(grades &gt; av_grade)]
+good_students &lt;- students[which(grades &gt; av_grade)]
+</code></pre>
+</div>
+</body>
+
+</html>

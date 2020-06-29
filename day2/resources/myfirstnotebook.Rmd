@@ -1,0 +1,32 @@
+---
+title: "My First R Notebook"
+---
+
+# My section (Big Heading 1)
+This is some text. In R notebooks # can be usd to define section headings. **define words in bold**, *define italics*.
+
+- we can also
+- have bullet points
+
+Below is a section of R code:
+
+```{r}
+print("hello world")
+```
+
+## My sub-section (Medium Heading 2)
+This is some text. In R notebooks ## can be used to define sub-section headings (###, #### define sub-subheadings etc.)
+
+We can also include plots in a notebook:
+
+```{r}
+x <- seq(1:8)
+y <- x*x
+plot(y~x)
+```
+Here we calculate the mean and display it:
+```{r}
+mean_x <- mean(x)
+mean_x
+```
+

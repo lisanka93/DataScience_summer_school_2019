@@ -1,0 +1,522 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multivariate Regression with interactions</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="multivariate-regression-with-interactions">Multivariate Regression with interactions</h1>
+<p>Start by clearing your environment:</p>
+<pre><code>rm(list = ls())
+</code></pre>
+<p>We load the required packages for this exercise:</p>
+<pre><code>library(texreg)
+</code></pre>
+<h3 id="loading-data">Loading Data</h3>
+<p>We will use the small version of the Quality of Government data from 2012 again (<code>QoG2012.csv</code>) with four variables:</p>
+
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>former_col</code></td>
+<td>0 = not a former colony  ,1 = former colony</td>
+</tr>
+<tr>
+<td><code>undp_hdi</code></td>
+<td>UNDP Human Development Index. Higher values mean better quality of life</td>
+</tr>
+<tr>
+<td><code>wbgi_cce</code></td>
+<td>Control of corruption. Higher values mean better control of corruption</td>
+</tr>
+<tr>
+<td><code>wdi_gdpc</code></td>
+<td>GDP per capita in US dollars</td>
+</tr>
+</tbody>
+</table><pre><code>world_data &lt;- read.csv("QoG2012.csv")
+names(world_data)
+</code></pre>
+<pre><code>[1] "h_j"         "wdi_gdpc"    "undp_hdi"    "wbgi_cce"    "wbgi_pse"   
+[6] "former_col"  "lp_lat_abst"
+</code></pre>
+<p>Rename the variables by yourself to:</p>
+
+<table>
+<thead>
+<tr>
+<th>New Name</th>
+<th>Old Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>human_development</code></td>
+<td><code>undp_hdi</code></td>
+</tr>
+<tr>
+<td><code>institutions_quality</code></td>
+<td><code>wbgi_cce</code></td>
+</tr>
+<tr>
+<td><code>gdp_capita</code></td>
+<td><code>wdi_gdpc</code></td>
+</tr>
+</tbody>
+</table><p>Therefore the new column names should be:</p>
+<pre><code>[1] "h_j"                  "gdp_capita"           "human_development"   
+[4] "institutions_quality" "wbgi_pse"             "former_col"          
+[7] "lp_lat_abst"         
+</code></pre>
+<p>Now let’s look at the summary statistics for the entire data set.</p>
+<pre><code>summary(world_data) 
+</code></pre>
+<pre><code>      h_j           gdp_capita      human_development institutions_quality
+ Min.   :0.0000   Min.   :  226.2   Min.   :0.2730    Min.   :-1.69953    
+ 1st Qu.:0.0000   1st Qu.: 1768.0   1st Qu.:0.5390    1st Qu.:-0.81965    
+ Median :0.0000   Median : 5326.1   Median :0.7510    Median :-0.30476    
+ Mean   :0.3787   Mean   :10184.1   Mean   :0.6982    Mean   :-0.05072    
+ 3rd Qu.:1.0000   3rd Qu.:12976.5   3rd Qu.:0.8335    3rd Qu.: 0.50649    
+ Max.   :1.0000   Max.   :63686.7   Max.   :0.9560    Max.   : 2.44565    
+ NA's   :25       NA's   :16        NA's   :19        NA's   :2           
+    wbgi_pse          former_col      lp_lat_abst    
+ Min.   :-2.46746   Min.   :0.0000   Min.   :0.0000  
+ 1st Qu.:-0.72900   1st Qu.:0.0000   1st Qu.:0.1343  
+ Median : 0.02772   Median :1.0000   Median :0.2444  
+ Mean   :-0.03957   Mean   :0.6289   Mean   :0.2829  
+ 3rd Qu.: 0.79847   3rd Qu.:1.0000   3rd Qu.:0.4444  
+ Max.   : 1.67561   Max.   :1.0000   Max.   :0.7222  
+                                     NA's   :7       
+</code></pre>
+<p>We need to remove missing values from  <code>gdp_capita</code>,  <code>human_development</code>, and  <code>institutions_quality</code>. Do so yourself.</p>
+<p>Do not drop observations that missing values on other observations such as  <code>lp_lat_abst</code>. We might throw away useful information when doing so.</p>
+<p><code>former_col</code>  is a categorical variable, let’s see how many observations are in each category (if you get a different result check you have correctly removed the <code>na</code> rows):</p>
+<pre><code>table(world_data$former_col) 
+</code></pre>
+<pre><code>  0   1 
+ 61 111 
+</code></pre>
+<p>Turn this variable into a factor variable and check the result with a frequency table, this should show:</p>
+<pre><code>never colonies    ex colonies 
+            61            111 
+</code></pre>
+<p>Now let’s create a scatterplot between  <code>institutions_quality</code>  and  <code>human_development</code>  and color the points based on the value of  <code>former_col</code>.</p>
+<p>NOTE: We’re using  <code>pch = 16</code>  to plot solid cicles. You can see other available styles by typing  <code>?points</code>  or  <code>help(points)</code>  at the console.</p>
+<p>Copy the plot command in the seminar, you can go over it at home.</p>
+<pre><code># main plot
+plot(
+  human_development ~ institutions_quality, 
+  data = world_data, 
+  frame.plot = FALSE,
+  col = former_col,
+  pch = 16,
+  cex = 1.2,
+  bty = "n",
+  main = "Relation between institutional quality and hdi by colonial past",
+  xlab = "quality of institutions",
+  ylab = "human development index"
+  )
+
+# add a legend
+legend(
+  "bottomright",  # position fo legend
+  legend = levels(world_data$former_col), # what to seperate by 
+  col = world_data$former_col, # colors of legend labels
+  pch = 16, # dot type
+  bty = "n" # no box around the legend
+  )
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-215-1.png" alt=""></p>
+<p>To explain the level of development with quality of institutions is intuitive. We could add the colonial past dummy, to control for potential confounders. Including a dummy gives us the difference between former colonies and not former colonies. It therefore displaces the regression line vertically, without changing its slope . We have looked at binary variables in the last exercises. To see the effect of a dummy again, refer to the extra info at the bottom of page.</p>
+<h3 id="interactions-continuous-and-binary">Interactions: Continuous and Binary</h3>
+<p>From the plot above, we can tell that the slope of the line (the effect of institutional quality) is probably different in countries that were colonies and those that were not. We say: the effect of institutional quality is conditional on colonial past.</p>
+<p>To specify an interaction term, we use the asterisk (<code>*</code>). Note if we use a formula:</p>
+<pre><code>var_y ~ var_x1 * var_x2` 
+</code></pre>
+<p>we automatically include in the model  constituents <code>var_x1</code> and <code>var_x2</code> i.e. the formula is equivalent to:</p>
+<pre><code>`var_y ~ var_x1 + var_x2 + var_x1 * var_x2`
+</code></pre>
+<p>and will produce coefficients for each of these terms.</p>
+<pre><code>model1 &lt;- lm(human_development ~ institutions_quality * former_col, data = world_data)
+screenreg( model1 )
+</code></pre>
+<pre><code>
+======================================================
+                                            Model 1   
+------------------------------------------------------
+(Intercept)                                   0.79 ***
+                                             (0.02)   
+institutions_quality                          0.08 ***
+                                             (0.01)   
+former_colex colonies                        -0.12 ***
+                                             (0.02)   
+institutions_quality:former_colex colonies    0.05 ** 
+                                             (0.02)   
+------------------------------------------------------
+R^2                                           0.56    
+Adj. R^2                                      0.55    
+Num. obs.                                   172       
+RMSE                                          0.12    
+======================================================
+*** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05
+</code></pre>
+<p>We set our covariate  <code>former_col</code>  to countries that weren’t colonized and then second, to ex colonies. We vary the quality of institutions from  <code>-1.7</code>  to  <code>2.5</code>  which is roughly the minimum to the maximum of the variable.</p>
+<p>NOTE: We know the range of values for  <code>institutions_quality</code>  from the summary statistics we obtained after loading the dataset at the beginning of the seminar. You can also use the  <code>range()</code>function.</p>
+<pre><code># minimum and maximum of the quality of institutions
+range(world_data$institutions_quality)
+</code></pre>
+<pre><code>[1] -1.699529  2.445654
+</code></pre>
+<p>We now illustrate what the interaction effect does. To anticipate, the effect of the quality of institutions is now conditional on colonial past. That means, the two regression lines will have different slopes.</p>
+<p>We make use of the  <code>predict()</code>  function to draw both regression lines into our plot. First, we need to vary the institutional quality variable from its minimum to its maximum. We use the  <code>seq()</code>  (sequence) function to create 10 different institutional quality values. Second, we create two separate covariate datasets. In the first, x1, we set the  <code>former_col</code>  variable to never colonies. In the second, x2, we set the same variable to ex colonies. We then predict the fitted values  <code>y_hat1</code>, not colonised countries, and  <code>y_hat2</code>, ex colonies.</p>
+<pre><code># sequence of 10 institutional quality values
+institutions_seq &lt;- seq(from = -1.7, to = 2.5, length.out = 10)
+
+# covariates for not colonies
+x1 &lt;- data.frame(former_col = "never colonies", institutions_quality = institutions_seq)
+# look at our covariates
+head(x1)
+</code></pre>
+<pre><code>      former_col institutions_quality
+1 never colonies           -1.7000000
+2 never colonies           -1.2333333
+3 never colonies           -0.7666667
+4 never colonies           -0.3000000
+5 never colonies            0.1666667
+6 never colonies            0.6333333
+</code></pre>
+<pre><code># covariates for colonies
+x2 &lt;- data.frame(former_col = "ex colonies", institutions_quality = institutions_seq)
+# look at our covariates
+head(x2)
+</code></pre>
+<pre><code>   former_col institutions_quality
+1 ex colonies           -1.7000000
+2 ex colonies           -1.2333333
+3 ex colonies           -0.7666667
+4 ex colonies           -0.3000000
+5 ex colonies            0.1666667
+6 ex colonies            0.6333333
+</code></pre>
+<pre><code># predict fitted values for countries that weren't colonised 
+yhat1 &lt;- predict(model1, newdata = x1)
+
+# predict fitted values for countries that were colonised
+yhat2 &lt;- predict(model1, newdata = x2)
+</code></pre>
+<p>We now have the predicted outcomes for varying institutional quality. Once for the countries that were former colonies and once for the countries that were not.</p>
+<p>We will re-draw our earlier plot. In addition, right below the  <code>plot()</code>  function, we use the  <code>lines()</code>function to add the two regression lines. The function needs to arguments  <code>x</code>  and  <code>y</code>  which represent the coordinates on the respective axes. On the x axis we vary our independent variable quality of institutions. On the y axis, we vary the predicted outcomes.</p>
+<p>We add two more arguments to our  <code>lines()</code>  function. The line width is controlled with  <code>lwd</code>  and we set the colour is controlled with  <code>col</code>  which we set to the first and second colours in the colour palette respectively.</p>
+<pre><code># main plot
+plot(
+  human_development ~ institutions_quality, 
+  data = world_data, 
+  frame.plot = FALSE,
+  col = former_col ,
+  pch = 16,
+  cex = 1.2,
+  bty = "n",
+  main = "Relation between institutional quality and hdi by colonial past",
+  xlab = "quality of institutions",
+  ylab = "human development index"
+  )
+
+# add the regression line for the countries that weren't colonised
+lines(x = institutions_seq, y = yhat1, lwd = 2, col = 1)
+
+# add the regression line for the ex colony countries
+lines(x = institutions_seq, y = yhat2, lwd = 2, col = 2)
+
+# add a legend
+legend(
+  "bottomright",  # position fo legend
+  legend = levels(world_data$former_col), # what to seperate by 
+  col = world_data$former_col, # colors of legend labels
+  pch = 16, # dot type
+  lwd = 2, # line width in legend
+  bty = "n" # no box around the legend
+  )
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-219-1.png" alt=""></p>
+<p>As you can see, the line is steeper for ex-colonies than for countries that were never colonised. That means the effect of institutional quality on human development is conditional on colonial past. Institutional quality matters more in ex colonies.</p>
+<p>Let’s examine the effect sizes of institutional quality conditional on colonial past.</p>
+<p><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mi>y</mi><mo>^</mo></mover><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>×</mo><mtext>institutions</mtext></mrow><annotation encoding="application/x-tex">\hat{y} = \beta_0+\beta_1\times\text{institutions}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.69444em;"><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span></span></span><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="accent-body" style="left: -0.19444em;">^</span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.19444em;"><span class=""></span></span></span></span></span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.66786em; vertical-align: 0em;"></span><span class="mord text"><span class="mord">institutions</span></span></span></span></span></span><br>
+<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</mtext><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>×</mo><mtext>former_col</mtext></mrow><annotation encoding="application/x-tex">~~~~~~+\beta_2\times\text{former\_col}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mord">+</span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 1.00444em; vertical-align: -0.31em;"></span><span class="mord text"><span class="mord">former_col</span></span></span></span></span></span><br>
+<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</mtext><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><mo>×</mo><mtext>institutions</mtext><mo>×</mo><mtext>former_col</mtext></mrow><annotation encoding="application/x-tex">~~~~~~+\beta_3\times\text{institutions}\times\text{former\_col}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mord">+</span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.75119em; vertical-align: -0.08333em;"></span><span class="mord text"><span class="mord">institutions</span></span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 1.00444em; vertical-align: -0.31em;"></span><span class="mord text"><span class="mord">former_col</span></span></span></span></span></span></p>
+<p><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mi>y</mi><mo>^</mo></mover><mo>=</mo><mn>0.79</mn><mo>+</mo><mn>0.08</mn><mo>×</mo><mtext>institutions</mtext></mrow><annotation encoding="application/x-tex">\hat{y} = 0.79+0.08\times\text{institutions}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.69444em;"><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span></span></span><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="accent-body" style="left: -0.19444em;">^</span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.19444em;"><span class=""></span></span></span></span></span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">7</span><span class="mord">9</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">0</span><span class="mord">8</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.66786em; vertical-align: 0em;"></span><span class="mord text"><span class="mord">institutions</span></span></span></span></span></span><br>
+<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</mtext><mo>−</mo><mn>0.12</mn><mo>×</mo><mtext>former_col</mtext></mrow><annotation encoding="application/x-tex">~~~~~~-0.12\times\text{former\_col}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mord">−</span><span class="mord">0</span><span class="mord">.</span><span class="mord">1</span><span class="mord">2</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 1.00444em; vertical-align: -0.31em;"></span><span class="mord text"><span class="mord">former_col</span></span></span></span></span></span><br>
+<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</mtext><mo>+</mo><mn>0.05</mn><mo>×</mo><mtext>institutions</mtext><mo>×</mo><mtext>former_col</mtext></mrow><annotation encoding="application/x-tex">~~~~~~+0.05\times\text{institutions}\times\text{former\_col}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mord">+</span><span class="mord">0</span><span class="mord">.</span><span class="mord">0</span><span class="mord">5</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.75119em; vertical-align: -0.08333em;"></span><span class="mord text"><span class="mord">institutions</span></span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 1.00444em; vertical-align: -0.31em;"></span><span class="mord text"><span class="mord">former_col</span></span></span></span></span></span></p>
+<p>There are now two scenarios. First, we look at never coloines or second, we look at ex colonies. Let’s look at never colonies first.</p>
+<p>If a country was never a colony, R translates the value of the factor variable  <code>former_col</code>  from  <code>never colony</code>  to  0. From the equation above, it follows that all terms that are multiplied with  <code>former_col</code>drop out.</p>
+<p><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mi>y</mi><mo>^</mo></mover><mo>=</mo><mn>0.79</mn><mo>+</mo><mn>0.08</mn><mo>×</mo><mtext>institutions</mtext></mrow><annotation encoding="application/x-tex">\hat{y} = 0.79+0.08\times\text{institutions}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.69444em;"><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span></span></span><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="accent-body" style="left: -0.19444em;">^</span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.19444em;"><span class=""></span></span></span></span></span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">7</span><span class="mord">9</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">0</span><span class="mord">8</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.66786em; vertical-align: 0em;"></span><span class="mord text"><span class="mord">institutions</span></span></span></span></span></span><br>
+<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</mtext><mo>−</mo><mn>0.12</mn><mo>×</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">~~~~~~-0.12\times0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mord">−</span><span class="mord">0</span><span class="mord">.</span><span class="mord">1</span><span class="mord">2</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.64444em; vertical-align: 0em;"></span><span class="mord">0</span></span></span></span></span><br>
+<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</mtext><mo>+</mo><mn>0.05</mn><mo>×</mo><mtext>institutions</mtext><mo>×</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">~~~~~~+0.05\times\text{institutions}\times0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mord">+</span><span class="mord">0</span><span class="mord">.</span><span class="mord">0</span><span class="mord">5</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.75119em; vertical-align: -0.08333em;"></span><span class="mord text"><span class="mord">institutions</span></span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.64444em; vertical-align: 0em;"></span><span class="mord">0</span></span></span></span></span></p>
+<p><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mi>y</mi><mo>^</mo></mover><mo>=</mo><mn>0.79</mn><mo>+</mo><mn>0.08</mn><mo>×</mo><mtext>institutions</mtext></mrow><annotation encoding="application/x-tex">\hat{y} = 0.79+0.08\times\text{institutions}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.69444em;"><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span></span></span><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="accent-body" style="left: -0.19444em;">^</span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.19444em;"><span class=""></span></span></span></span></span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">7</span><span class="mord">9</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">0</span><span class="mord">8</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.66786em; vertical-align: 0em;"></span><span class="mord text"><span class="mord">institutions</span></span></span></span></span></span></p>
+<p>Therefore, the effect of the quality of institutions in never colonies is just the coefficient of  <code>institutions_quality</code>  <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub><mo>=</mo><mn>0.08</mn></mrow><annotation encoding="application/x-tex">\beta_1=0.08</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.64444em; vertical-align: 0em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">0</span><span class="mord">8</span></span></span></span></span><br>
+In the second scenario, we are looking at ex colonies. R translates the value of the factor variable  <code>former_col</code>  from  <code>ex colonies</code>  to  1. In this case none of the terms drop out. From our original equation:</p>
+<p><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mi>y</mi><mo>^</mo></mover><mo>=</mo><mn>0.79</mn><mo>+</mo><mn>0.08</mn><mo>×</mo><mtext>institutions</mtext></mrow><annotation encoding="application/x-tex">\hat{y} = 0.79+0.08\times\text{institutions}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.69444em;"><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span></span></span><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="accent-body" style="left: -0.19444em;">^</span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.19444em;"><span class=""></span></span></span></span></span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">7</span><span class="mord">9</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">0</span><span class="mord">8</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.66786em; vertical-align: 0em;"></span><span class="mord text"><span class="mord">institutions</span></span></span></span></span></span><br>
+<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</mtext><mo>−</mo><mn>0.12</mn><mo>×</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">~~~~~~-0.12\times1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mord">−</span><span class="mord">0</span><span class="mord">.</span><span class="mord">1</span><span class="mord">2</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.64444em; vertical-align: 0em;"></span><span class="mord">1</span></span></span></span></span><br>
+<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</mtext><mo>+</mo><mn>0.05</mn><mo>×</mo><mtext>institutions</mtext><mo>×</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">~~~~~~+0.05\times\text{institutions}\times1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mspace nobreak">&nbsp;</span><span class="mord">+</span><span class="mord">0</span><span class="mord">.</span><span class="mord">0</span><span class="mord">5</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.75119em; vertical-align: -0.08333em;"></span><span class="mord text"><span class="mord">institutions</span></span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.64444em; vertical-align: 0em;"></span><span class="mord">1</span></span></span></span></span></p>
+<p>The effect of the quality of institutions is then:<br>
+<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub><mo>+</mo><msub><mi>β</mi><mn>3</mn></msub><mo>=</mo><mn>0.08</mn><mo>+</mo><mn>0.05</mn><mo>=</mo><mn>0.13</mn></mrow><annotation encoding="application/x-tex">\beta_1+\beta_3=0.08+0.05=0.13</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">0</span><span class="mord">8</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.64444em; vertical-align: 0em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">0</span><span class="mord">5</span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.64444em; vertical-align: 0em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">1</span><span class="mord">3</span></span></span></span></span></p>
+<p>The numbers also tell us that the effect of the quality of institutions is bigger in ex colonies. For never colonies the effect is  0.08  for every unit-increase in institutional quality. For ex colonies, the corresponding effect is  0.13</p>
+<p>The table below summarises the interaction of a continuous variable with a binary variable in the context of our regression model.</p>
+
+<table>
+<thead>
+<tr>
+<th>Ex Colony</th>
+<th>Intercept</th>
+<th>Slope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 = never colony</td>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span>=0.79</td>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">\beta_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span>=0.08</td>
+</tr>
+<tr>
+<td>1 = ex colony</td>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span>+<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">\beta_2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span>=0.79</td>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span>+<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>3</mn></msub></mrow><annotation encoding="application/x-tex">\beta_3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span>=0.08+0.05=0.13</td>
+</tr>
+</tbody>
+</table><h3 id="non-linearities">Non-Linearities</h3>
+<p>We can use interactions to model non-linearities. Let’s suppose we want to illustrate the relationship between GDP per capita and the human development index.</p>
+<p>We draw a scatter plot to investigate the relationship between the quality of life (hdi) and wealth (gdp/captia).</p>
+<pre><code>plot(
+  human_development ~ gdp_capita, 
+  data = world_data,
+  pch = 16,
+  frame.plot = FALSE,
+  col = "grey",
+  main = "Relationship between the quality of life and wealth",
+  ylab = "Human development index",
+  xlab = "GDP per capita"
+  )
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-221-1.png" alt=""></p>
+<p>It’s easy to see, that the relationship between GDP per captia and the Human Development Index is not linear. Increases in wealth rapidly increase the quality of life in poor societies. The richer the country, the less pronounced the effect of additional wealth. We would mis-specify our model if we do not take the non-linear relationship into account.</p>
+<p>Let’s go ahead and mis-specify our model :-)</p>
+<pre><code># a mis-specified model
+bad.model &lt;- lm(human_development ~ gdp_capita, data = world_data)
+screenreg( bad.model )
+</code></pre>
+<pre><code>
+=======================
+             Model 1   
+-----------------------
+(Intercept)    0.59 ***
+              (0.01)   
+gdp_capita     0.00 ***
+              (0.00)   
+-----------------------
+R^2            0.49    
+Adj. R^2       0.49    
+Num. obs.    172       
+RMSE           0.13    
+=======================
+*** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05
+</code></pre>
+<p>We detect a significant linear relationship. The effect may look small because the coefficient rounded to two digits is zero. But remember, this is the effect of increasing GDP/capita by  1  US dollar on the quality of life. That effect is naturally small but it is probably not small when we increase wealth by  1000  US dollars.</p>
+<p>However, our model would also entail that for every increase in GDP/capita, the quality of life increases on average by the same amount. We saw from our plot that this is not the case. The effect of GDP/capita on the quality of life is conditional on the level of GDP/capita. If that sounds like an interaction to you, then that is great because, we will model the non-linearity by raising the GDP/capita to a higher power. That is in effect an interaction of the variable with itself. GDP/capita raised to the second power, e.g. is (GDP/capita)<span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.66666em; vertical-align: -0.08333em;"></span><span class="mord">×</span></span></span></span></span>GDP/capita.</p>
+<h4 id="polynomials">6.1.3.1  Polynomials</h4>
+<p>We know from school that polynomials like  <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span>,  <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>x</mi><mn>3</mn></msup></mrow><annotation encoding="application/x-tex">x^3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span></span></span></span></span>  and so on are not linear. In fact,  <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span>  can make one bend,  <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>x</mi><mn>3</mn></msup></mrow><annotation encoding="application/x-tex">x^3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span></span></span></span></span>  can make two bends and so on.</p>
+<p>Our plot looks like the relationship is quadratic. So, we use the  <code>poly()</code>  function in our linear model to raise GDP/capita to the second power like so:  <code>poly(gdp_capita, 2).</code></p>
+<pre><code>better.model &lt;- lm(human_development ~ poly(gdp_capita, 2), data = world_data)
+screenreg( list(bad.model, better.model), 
+           custom.model.names = c("bad model", "better model"))
+</code></pre>
+<pre><code>
+==============================================
+                      bad model   better model
+----------------------------------------------
+(Intercept)             0.59 ***    0.70 ***  
+                       (0.01)      (0.01)     
+gdp_capita              0.00 ***              
+                       (0.00)                 
+poly(gdp_capita, 2)1                1.66 ***  
+                                   (0.10)     
+poly(gdp_capita, 2)2               -1.00 ***  
+                                   (0.10)     
+----------------------------------------------
+R^2                     0.49        0.67      
+Adj. R^2                0.49        0.66      
+Num. obs.             172         172         
+RMSE                    0.13        0.10      
+==============================================
+*** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05
+</code></pre>
+<p>It is important to note, that in the better model the effect of GDP/capita is no longer easy to interpret. We cannot say for every increase in GDP/capita by one dollar, the quality of life increases on average by this much. No, the effect of GDP/capita depends on how rich a country was to begin with.</p>
+<p>It looks like our model that includes the quadratic term has a much better fit. The adjusted <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">R^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.00773em;">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span> increases by a lot. Furthermore, the quadratic term,  <code>poly(gdp_capita, 2)2</code>  is significant. That indicates that newly added variable improves model fit. We can run an F-test with  <code>anova()</code>  function which will return the same result. The F-test would be useful when we add more than one new variable, e.g. we could have raised GDP_captia to the power of 5 which would have added four new variables.</p>
+<pre><code># f test
+anova(bad.model, better.model)
+</code></pre>
+<pre><code>Analysis of Variance Table
+
+Model 1: human_development ~ gdp_capita
+Model 2: human_development ~ poly(gdp_capita, 2)
+  Res.Df    RSS Df Sum of Sq     F    Pr(&gt;F)    
+1    170 2.8649                                 
+2    169 1.8600  1    1.0049 91.31 &lt; 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</code></pre>
+<p>We can interpret the effect of wealth (GDP/capita) on the quality of life (human development index) by predicting the fitted values of the human development index given a certain level of GDP/capita. We will vary GDP/capiia from its minimum in the data to its maximum and the plot the results which is a good way to illustrate a non-linear relationship.</p>
+<p>Step 1: We find the minimum and maximum values of GDP/capita.</p>
+<pre><code># find minimum and maximum of per capita gdp
+range(world_data$gdp_capita)
+</code></pre>
+<pre><code>[1]   226.235 63686.676
+</code></pre>
+<p>Step 2: We predict fitted values for varying levels of GDP/captia (let’s create 100 predictions).</p>
+<pre><code># our sequence of 100 GDP/capita values
+gdp_seq &lt;- seq(from = 226, to = 63686, length.out = 100)
+
+# we set our covarite values (here we only have one covariate: GDP/captia)
+x &lt;- data.frame(gdp_capita = gdp_seq)
+
+# we predict the outcome (human development index) for each of the 100 GDP levels
+y_hat &lt;- predict(better.model, newdata = x)
+</code></pre>
+<p>Step 3: Now that we have created our predictions. We plot again and then we add the  <code>bad.model</code>  using  <code>abline</code>  and we add our non-linear version  <code>better.model</code>  using the  <code>lines()</code>  function.</p>
+<pre><code>plot(
+  human_development ~ gdp_capita, 
+  data = world_data,
+  pch = 16,
+  frame.plot = FALSE,
+  col = "grey",
+  main = "Relationship between the quality of life and wealth",
+  ylab = "Human development index",
+  xlab = "GDP per capita"
+  )
+
+# the bad model
+abline(bad.model, col = 1, lwd = 2)
+
+# better model
+lines(x = gdp_seq, y = y_hat, col = 2, lwd = 2)
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-227-1.png" alt=""></p>
+<p>At home, we want you to estimate  <code>even.better.model</code>  with GDP/capita raised to the power of three to determine whether the data fit improves. Show this visually and with an F test.</p>
+<p>Show</p>
+<pre><code>Analysis of Variance Table
+
+Model 1: human_development ~ poly(gdp_capita, 2)
+Model 2: human_development ~ poly(gdp_capita, 3)
+  Res.Df    RSS Df Sum of Sq      F    Pr(&gt;F)    
+1    169 1.8600                                  
+2    168 1.4414  1   0.41852 48.779 6.378e-11 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+</code></pre>
+<p>Show</p>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-228-1.png" alt=""></p>
+<p>We generate an even better fit with the cubic, however it still looks somewhat strange. The cubic is being wagged around by its tail. The few extreme values cause the strange shape. This is a common problem with polynomials. We move on to an alternative.</p>
+<h4 id="log-transformations">Log-transformations</h4>
+<p>Many non-linear relationships actually do look linear on the log scale. We can illustrate this by taking the natural logarithm of GDP/capita and plot the relationship between quality of life and our transformed GDP variable.</p>
+<p>Note: Some of you will remember from your school calculators that you have an <strong>ln</strong> button and a <strong>log</strong> button where <strong>ln</strong> takes the natural logarithm and <strong>log</strong> takes the logarithm with base 10. The natural logarithm represents relations that occur frequently in the world and R takes the natural logarithm with the  <code>log()</code>  function by default.</p>
+<p>Below, we plot the same plot from before but we wrap  <code>gdp_capita</code>  in the  <code>log()</code>  function which log-transforms the variable.</p>
+<pre><code>plot(
+  human_development ~ log(gdp_capita), 
+  data = world_data,
+  pch = 16,
+  frame.plot = FALSE,
+  col = "grey",
+  main = "Relationship between the quality of life and wealth on the log scale",
+  ylab = "Human development index",
+  xlab = "Logged gdp/capita"
+  )
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-229-1.png" alt=""></p>
+<p>As you can see, the relationship now looks linear and we get the best fit to the data if we run our model with log-transformed gdp.</p>
+<pre><code># run model with log-transformed gdp
+best.model &lt;- lm(human_development ~ log(gdp_capita), data = world_data)
+
+# let's check our model
+screenreg( list(bad.model, better.model, even.better.model, best.model),
+           custom.model.names = c("Bad Model", "Better Model", "Even Better Model", "Best Model"))
+</code></pre>
+<pre><code>
+=============================================================================
+                      Bad Model   Better Model  Even Better Model  Best Model
+-----------------------------------------------------------------------------
+(Intercept)             0.59 ***    0.70 ***      0.70 ***          -0.36 ***
+                       (0.01)      (0.01)        (0.01)             (0.04)   
+gdp_capita              0.00 ***                                             
+                       (0.00)                                                
+poly(gdp_capita, 2)1                1.66 ***                                 
+                                   (0.10)                                    
+poly(gdp_capita, 2)2               -1.00 ***                                 
+                                   (0.10)                                    
+poly(gdp_capita, 3)1                              1.66 ***                   
+                                                 (0.09)                      
+poly(gdp_capita, 3)2                             -1.00 ***                   
+                                                 (0.09)                      
+poly(gdp_capita, 3)3                              0.65 ***                   
+                                                 (0.09)                      
+log(gdp_capita)                                                      0.12 ***
+                                                                    (0.00)   
+-----------------------------------------------------------------------------
+R^2                     0.49        0.67          0.74               0.81    
+Adj. R^2                0.49        0.66          0.74               0.81    
+Num. obs.             172         172           172                172       
+RMSE                    0.13        0.10          0.09               0.08    
+=============================================================================
+*** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05
+</code></pre>
+<p>Polynomials can be useful for modelling non-linearities. However, for each power we add an additional parameter that needs to be estimated. This reduces the degrees of freedom. If we can get a linear relationship on the log scale, one advantage is that we lose only one degree of freedom. Furthermore, we gain interpretability. The relationship is linear on the log scale of gdp/capita. This means we can interpret the effect of gdp/captia as:</p>
+<p>For an increase of gdp/captia by one percent, the quality of life increases by  0.121  points on average. The effect is very large because  <code>human_development</code>  only varies from  0  to  1.</p>
+<p>To assess model fit, the F test is not very helpful here because, the initial model and the log-transformed model estimate the same number of parameters (the difference in the degrees of freedom is 0). Therefore, we rely on adjusted <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">R^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.00773em;">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span> for interpretation of model fit. It penalises for additional parameters. According to our adjusted <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">R^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.00773em;">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span>, the log-transformed model provides the best model fit.</p>
+<p>To illustrate that this is the case, we return to our plot and show the model fit graphically.</p>
+<pre><code># fitted values for the log model (best model)
+y_hat3 &lt;- predict(best.model, newdata = x)
+
+# plot showing the fits
+plot(
+  human_development ~ gdp_capita, 
+  data = world_data,
+  pch = 16,
+  frame.plot = FALSE,
+  col = "grey",
+  main = "Relationship between the quality of life and wealth",
+  ylab = "Human development index",
+  xlab = "GDP per capita"
+  )
+
+# the bad model
+abline(bad.model, col = 1, lwd = 2)
+
+# better model
+lines(x = gdp_seq, y = y_hat, col = 2, lwd = 2)
+
+# even better model
+lines(x = gdp_seq, y = y_hat2, col = 3, lwd = 2)
+
+# best model
+lines(x = gdp_seq, y = y_hat3, col = 4, lwd = 2)
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-231-1.png" alt=""></p>
+<p>The dark purple line shows the log-transformed model. It clearly fits the data best.</p>
+<h4 id="exercises">Exercises:</h4>
+<p>Use the High School and beyond data. Our aim will be to predict the <code>science</code> score.</p>
+<ol>
+<li>Build a model using <code>math</code> and <code>gender</code> allowing an interaction. Is there evidence that  this interaction is significant?</li>
+<li>Explore if fitting <code>science</code> on <code>math</code> with polynomials improves our predictions. What type of polynomial fit do you think is most appropriate in this case?</li>
+<li>Try to explore how to find the best model that predicts <code>science</code> based on the values of the other variables. Think about how you can decide which is an optimal model.</li>
+</ol>
+</div>
+</body>
+
+</html>

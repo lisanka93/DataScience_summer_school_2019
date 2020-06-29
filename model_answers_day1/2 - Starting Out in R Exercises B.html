@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starting Out in R Exercises B</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p><strong>Exercises B.</strong><br>
+A seller sells iphones on ebay and wants to explore their sales data (cost of second hand <em>IPhone XS 64GB</em> in GBP £:</p>
+<pre><code>iphone_sales &lt;- c(621, 455, 650, 600, 625, 646, 640, 750, 480, 629, 690, 600)
+</code></pre>
+<p>Use the above commands to answer the following questions:</p>
+<ol>
+<li>What is the total money that has been raised?<br>
+Hint: <code>sum(iphone_sales)</code></li>
+</ol>
+<pre><code>sum(iphone_sales)
+[1] 7386
+</code></pre>
+<ol start="2">
+<li>How many iphones sales are in the data?</li>
+</ol>
+<pre><code>length(iphone_sales)
+[1] 12
+</code></pre>
+<ol start="3">
+<li>What was the mean price paid?</li>
+</ol>
+<pre><code>mean(iphone_sales)
+[1] 615.5
+</code></pre>
+<ol start="4">
+<li>What was the median price paid?</li>
+</ol>
+<pre><code>median(iphone_sales)
+[1] 627
+</code></pre>
+<ol start="5">
+<li>What was the maximum price paid?</li>
+</ol>
+<pre><code>max(iphone_sales)
+[1] 750
+</code></pre>
+<ol start="6">
+<li>What was the minimum price paid?</li>
+</ol>
+<pre><code>min(iphone_sales)
+[1] 455
+</code></pre>
+<hr>
+<p>The following data records the birth weight in kg of 100 babies</p>
+<pre><code>birth_weights &lt;- c(2.57, 3.25, 2.51, 3.04, 2.12, 2.54, 2.39, 2.55, 3.2, 2.66, 2.77, 2.8, 2.45, 2.13, 2.57, 2.75, 3.11, 2.6, 2.58, 3.35, 2.39, 2.87, 2.47, 2.87, 2.08, 2.49, 2.59, 3.1, 2.51, 2.82, 2.53, 2.36,  2.98, 2.52, 3.24, 2.88, 2.64, 2.88, 2.68, 2.88, 2.54, 1.85, 2.76, 2.96, 2.31, 2.25, 2.53, 2.49, 2.87, 2.75, 3.11, 3.36, 2.69, 2.69, 2.8, 2.57, 2.65, 2.66, 2.81, 2.76, 2.6, 2.72, 2.63, 3.02, 2.7, 2.45, 2.6, 2.42, 2.78, 3.04, 2.95, 2.78, 2.66, 2.82, 2.68, 1.88, 2.84, 2.55, 3.21, 3.57, 2.2, 2.94, 2.75, 2.49, 2.95, 2.98, 2.66, 2.58, 2.27, 2.45, 2.61, 2.6, 3.08, 2.59, 3.46, 2.53, 3.33, 2.76, 2.27, 2.93)
+</code></pre>
+<p>Use R commands to answer the following questions:</p>
+<ol start="7">
+<li>What was the mean birth weight?</li>
+</ol>
+<pre><code>mean(birth_weights)
+[1] 2.7046
+</code></pre>
+<ol start="8">
+<li>What was the variance and standard deviation in the birth weight distribution?</li>
+</ol>
+<pre><code>var(birth_weights)
+[1] 0.1015968
+sd(birth_weights)
+[1] 0.3187425
+</code></pre>
+<ol start="9">
+<li>Check that the values for the last question are in agreement. (Hint: recall the relationship between standard deviation and variance).</li>
+</ol>
+<p><em>Standard deviation is square root of variance:</em></p>
+<pre><code>sqrt(var(birth_weights))
+[1] 0.3187425
+</code></pre>
+<ol start="10">
+<li>What was the range of birth weights?</li>
+</ol>
+<pre><code>range(birth_weights)
+[1] 1.85 3.57
+</code></pre>
+<ol start="11">
+<li>What weight range accounts for 95% of all births (so that 2.5% are lower and 2.5% are higher)</li>
+</ol>
+<pre><code>quantile(birth_weights,0.025)
+ 2.5% 
+2.099 
+quantile(birth_weights,0.975)
+  97.5% 
+3.35525 
+</code></pre>
+<p><em>or both at once…</em></p>
+<pre><code>quantile(birth_weights,c(0.025,0.975))
+   2.5%   97.5% 
+2.09900 3.35525 
+</code></pre>
+<ol start="12">
+<li>How can we obtain a sorted set of the data?</li>
+</ol>
+<pre><code>birth_weights_sorted &lt;- sort(birth_weights)
+birth_weights_sorted
+  [1] 1.85 1.88 2.08 2.12 ...
+</code></pre>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,107 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+First load the libraries we will be using:
+```{r}
+library(readr)
+library(dplyr)
+```
+
+Next we can read the data file. We label this *raw* as we will edit it prior to analysis.
+
+```{r}
+world_data_raw <- read_csv("QoG2012.csv")
+```
+
+Now we need code to:
+ 1. check the dimensions of  `world_data`
+ 2. find the column names of the variables of the dataset
+ 3. print the first six rows of the dataset
+
+```{r}
+str(world_data)
+```
+
+
+
+The next step is to rename the columns:
+
+```{r}
+# rename the columns using rename function
+world_data <- rename(world_data_raw, 
+                     judicary = h_j, 
+                     gdp = wdi_gdpc, 
+                     hdi = undp_hdi, 
+                     corruption = wbgi_cce, 
+                     stability = wbgi_pse, 
+                     abs_lat = lp_lat_abst)
+```
+
+Make a linear model of `gdp` vs `stability`:
+```{r}
+lm1 <- lm(gdp ~ stability, data=world_data)
+plot(gdp ~ stability, data=world_data)
+abline(lm1)
+```
+```{r}
+summary(lm1)
+```
+
+The formula produced is:
+`gdp_predicted = 10725.8 + 7413.5*stability `
+so for each 0.1 increase in stability, there is a $741.35 change in gdp per capita.
+
+The p-value on the gradient tests against the null hypothesis that the gradient is zero (no linear relationship between gdp and stability). The low value here means we can reject the null hypothesis at the 0.001 significance level.
+
+The Rsquared statistic is 0.3531 this means the linear relationship modelled can explain around 35% of the variance in gdp using the calculated political stability statistic.
+
+```{r}
+world_data <- mutate(world_data, loggdp = log(gdp))
+```
+
+Make a linear model of `gdp` vs `stability`:
+```{r}
+lm2 <- lm(log_gdp ~ stability, data=world_data)
+plot(log_gdp~stability, data=world_data)
+abline(lm2)
+```
+
+
+```{r}
+summary(lm2)
+```
+The formula produced is:
+`log_gdp_predicted = 8.54822 + 0.86507*stability `
+or
+`gdp_predicted = 10^(8.54822+0.86507*stability) `
+`gdp_predicted = 353362127*10^(0.86507*stability) `
+
+The p-value on the gradient tests against the null hypothesis that the gradient is zero (no linear relationship between log_gdp and stability). The low value here means we can reject the null hypothesis at the 0.001 significance level.
+
+The Rsquared statistic is 0.4252 this means the linear relationship modelled can explain around 42% of the variance in gdp using the calculated political stability statistic.
+
+This indicates that the adjusted model using log_gdp can "explain" a larger fraction of the variation in log_gdp.
+
+```{r}
+n <- nrow(world_data)
+world_data$x <- rnorm(n, mean=0, sd=10)
+```
+
+```{r}
+lm3 <- lm(log_gdp ~ x, data=world_data)
+plot(log_gdp~x, data=world_data)
+abline(lm3)
+```
+
+
+```{r}
+summary(lm3)
+```
+In this case we see that the line of best fit is:
+`log_gdp = 8.4849819 - -0.0001192x`
+However we see the p-value of the coefficient for x is 0.99, i.e. there is not evidence at the 95% level that this is non-zero so we cannot reject the null hypothesis that there is no linear relationship between log_gdp and x.
+

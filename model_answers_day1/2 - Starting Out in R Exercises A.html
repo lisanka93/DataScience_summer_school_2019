@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starting Out in R Exercises A</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p><strong>Exercises A.</strong></p>
+<ol>
+<li>Calculate the total length in km if all the double decker<br>
+buses in London were parked end to end.<br>
+(6785 buses of length 10.5m).</li>
+</ol>
+<pre><code>total_length_m &lt;- (6785*10.5)
+total_length_km &lt;- total_length_m/1000
+total_length_km
+[1] 71.2425
+</code></pre>
+<ol start="2">
+<li>Calculate the average distance between stops on the Victoria line. (16 stations, total line length 21km)</li>
+</ol>
+<pre><code>av_dist &lt;- 21/16
+av_dist
+[1] 1.3125
+</code></pre>
+<ol start="3">
+<li>Calculate the cost of getting a black cab 6.1 km from Brick Lane to UCL (cost is £3.00 for first 162m then 20p for every 81m)</li>
+</ol>
+<pre><code>total_dist_m &lt;- 6100
+remaining_dist &lt;- 6100-162
+cost &lt;- 3 + (remaining_dist/81)*0.2
+cost
+[1] 17.66173
+</code></pre>
+<ol start="4">
+<li>Estimate the number of biscuits in a pack of <em>McVities Rich Tea</em> .(length of pack 23.5cm, length of biscuit 0.6cm)</li>
+</ol>
+<pre><code>23.5/0.6
+[1] 39.16667
+</code></pre>
+</div>
+</body>
+
+</html>

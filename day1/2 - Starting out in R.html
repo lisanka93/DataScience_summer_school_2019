@@ -1,0 +1,693 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Starting out in R</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="starting-out-in-r">Starting Out in R</h1>
+<h2 id="introduction">Introduction</h2>
+<p><em>R</em> is a coding language focussed on the interactive analysis of data. It was written as an open-source alternative to the <em>S</em> language and along with Python is the most popular language for applied data science.</p>
+<h4 id="rstudio-and-the-r-console">RStudio and the R console</h4>
+<p>To work and run <em>R</em> code we will use <a href="https://www.rstudio.com/">RStudio</a>. This application is an IDE (Integrated Development Environment) that allows us to organise projects files, edit code, to run code, view results and even to write up our work.</p>
+<p>Note: RStudio has other useful functionality for more advanced development work for example e.g., version control, developing R packages, writing interactive data dashboards and web applications.</p>
+<p>Typically when we work in RStudio we might see the window divided into four panes:<br>
+<img src="https://datacarpentry.org/R-ecology-lesson/img/rstudio-screenshot.png" alt="RStudio interface screenshot. Clockwise from top left: Source, Environment/History, Files/Plots/Packages/Help/Viewer, Console."></p>
+<p>RStudio interface screenshot. Clockwise from top left: Source, Environment/History, Files/Plots/Packages/Help/Viewer, Console.</p>
+
+<table>
+<thead>
+<tr>
+<th>pane</th>
+<th>default location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>the  <strong>source pane</strong>  for your scripts and documents</td>
+<td>top left</td>
+</tr>
+<tr>
+<td>the <strong>Environment/History</strong> pane</td>
+<td>top right</td>
+</tr>
+<tr>
+<td>the <strong>Files/Plots/Packages/Help/Viewer</strong> pane</td>
+<td>bottom right</td>
+</tr>
+<tr>
+<td>the <strong>R-Console</strong> pane</td>
+<td>bottom left</td>
+</tr>
+</tbody>
+</table><p>The placement of these panes and their content can be customized (see menu, Tools -&gt; Global Options -&gt; Pane Layout).</p>
+<p>One of the advantages of using RStudio is that all the information you need to write code is available in a single window. It also has useful data and editing tools, keyboard shortcuts, autocompletion, and code debugging tools.</p>
+<p>For now we will concentrate only in the R Console panel, which allows us to type in and run commands.</p>
+<p><img src="https://lh3.googleusercontent.com/iCNb6a4wiKQLd12_OKyT9eTA5ijS0DyO7Kx4hm8QYdCYBJHMhc093wnpnknICzCZJbriukBq9ICf" alt="enter image description here" title="R Console"></p>
+<h3 id="maths-in-r">Maths in R</h3>
+<p>We can use R as a scientific calculator using commands like:</p>
+<pre><code>+ addition 
+- subtraction
+/ division
+* mutliplication
+</code></pre>
+<p>Try entering the following commands into the RStudio console:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">1 + 2
+</code></pre>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">999999 / 810000
+</code></pre>
+<p>Some other useful R commands when carrying out calculations are:</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>**</code> or <code>^</code></td>
+<td>raise to the power</td>
+<td><code>10**3</code> and <code>10^3</code> give <code>1000</code></td>
+</tr>
+<tr>
+<td><code>sqrt</code></td>
+<td>square root</td>
+<td><code>sqrt(16)</code> gives <code>4</code></td>
+</tr>
+<tr>
+<td><code>exp</code></td>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>e</mi><mi>x</mi></msup></mrow><annotation encoding="application/x-tex">e^x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.664392em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.664392em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">x</span></span></span></span></span></span></span></span></span></span></span></span></td>
+<td><code>exp(2)</code> gives <code>7.389056</code></td>
+</tr>
+<tr>
+<td><code>log10</code></td>
+<td>logarithm base 10</td>
+<td><code>log10(1000)</code> gives <code>3</code></td>
+</tr>
+<tr>
+<td><code>log</code></td>
+<td>natural logarithm</td>
+<td><code>log(7.389056)</code> gives <code>2</code></td>
+</tr>
+<tr>
+<td><code>abs</code></td>
+<td>absolute value</td>
+<td><code>abs(-2.5)</code> gives <code>2.5</code></td>
+</tr>
+</tbody>
+</table><p>R uses <code>e</code>-notation for entering and displaying very large or small numbers in scientific format:</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1e6</code></td>
+<td>means 1,000,000</td>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>1</mn><mo>×</mo><mn>1</mn><msup><mn>0</mn><mn>6</mn></msup></mrow><annotation encoding="application/x-tex">1\times10^6</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">1</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">6</span></span></span></span></span></span></span></span></span></span></span></span></td>
+</tr>
+<tr>
+<td><code>2.5e-3</code></td>
+<td>means 0.0025</td>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>2.5</mn><mo>×</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>3</mn></mrow></msup></mrow><annotation encoding="application/x-tex">2.5\times10^{-3}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">2</span><span class="mord">.</span><span class="mord">5</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">3</span></span></span></span></span></span></span></span></span></span></span></span></span></td>
+</tr>
+<tr>
+<td><code>-4e-4</code></td>
+<td>means -0.0004</td>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>−</mo><mn>4</mn><mo>×</mo><mn>1</mn><msup><mn>0</mn><mrow><mo>−</mo><mn>4</mn></mrow></msup></mrow><annotation encoding="application/x-tex">-4\times10^{-4}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">−</span><span class="mord">4</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">−</span><span class="mord mtight">4</span></span></span></span></span></span></span></span></span></span></span></span></span></td>
+</tr>
+</tbody>
+</table><pre class=" language-undefined"><code class="prism language-{r} language-undefined">&gt; 1000*1000
+&gt; 2.5/100000
+</code></pre>
+<p>Calculations are completed according to the priority defined by the <em>PEDMAS</em> system:</p>
+
+<table>
+<thead>
+<tr>
+<th>Order of priority</th>
+<th>e.g.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Parentheses or brackets</td>
+<td><code>(4 + 1) * 3 = 15</code></td>
+</tr>
+<tr>
+<td>Exponentiation</td>
+<td><code>3^2 = 9</code></td>
+</tr>
+<tr>
+<td>Division:</td>
+<td><code>3 / 4 = 0.75</code></td>
+</tr>
+<tr>
+<td>Multiplication:</td>
+<td><code>7 * 7 = 49</code></td>
+</tr>
+<tr>
+<td>Addition:</td>
+<td><code>3 + 3 = 6</code></td>
+</tr>
+<tr>
+<td>Subtraction:</td>
+<td><code>5 - 2 = 3</code></td>
+</tr>
+</tbody>
+</table><p><strong>Exercises A.</strong></p>
+<ol>
+<li>Calculate the total length in km if all the double decker<br>
+buses in London were parked end to end.<br>
+(6785 buses of length 10.5m).</li>
+<li>Calculate the average distance between stops on the Victoria line. (16 stations, total line length 21km)</li>
+<li>Calculate the cost of getting a black cab 6.1 km from Brick Lane to UCL (cost is £3.00 for first 162m then 20p for every 81m)</li>
+<li>Estimate the number of biscuits in a pack of <em>McVities Rich Tea</em> .(length of pack 23.5cm, length of biscuit 0.6cm)</li>
+</ol>
+<h3 id="variable-assignment-in-r">Variable assignment in R</h3>
+<p>To help us work with information we store it as a variable. In most programming languages we assign data using the equals sign <code>=</code>, this can also be used in R, but the convention is to use an arrow <code>&lt;-</code> for assignment. Type the following in the console:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">a &lt;- 3
+b &lt;- 5
+a + b
+</code></pre>
+<p>Other allowed ways to assign data to variables in R:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">c = 4
+5 -&gt; d
+e &lt;- c + d
+e
+</code></pre>
+<p>Note that R displays the output of any command, except when we store the output into a variable then R.</p>
+<h4 id="variable-naming-schemes">Variable naming schemes</h4>
+<p>Variable names should be chosen to be concise but informative. They must start with a letter (not a number) and only contain letters, numbers and the dot <code>.</code> or underscore <code>_</code> character.</p>
+<p>Variable names cannot use spaces so their are a few naming conventions for getting around this:</p>
+
+<table>
+<thead>
+<tr>
+<th>format</th>
+<th>example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>snake_case_uses_underscores</code></td>
+<td><code>population_by_country</code></td>
+</tr>
+<tr>
+<td><code>camelCaseUsesCapitals</code></td>
+<td><code>populationByCountry</code></td>
+</tr>
+<tr>
+<td><code>another.style.using.periods</code></td>
+<td><code>population.by.country</code></td>
+</tr>
+</tbody>
+</table><p>You are free to choose which you prefer but the important thing is to try to work consistently within your code files.</p>
+<p>Note: take care to avoid variable names that might overwrite inbuilt commands, e.g. <code>plot</code>, <code>mean</code>, <code>max</code>. A simple way to do this is to add a my prefix e.g. <code>my_plot</code> . When typing</p>
+<h4 id="types-of-variables">Types of variables</h4>
+<p>We need to deal with many different types of data (e.g. numerical, text, category), and also we need to deal with collections of data (e.g. lists, tables).</p>
+<p><em>R</em> contains object classes that let us store and work with these different types of data. Below are some of the common object classes we will work with:</p>
+<p><strong>Classes in R: types of data</strong></p>
+
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>detail</th>
+<th>example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>integer</td>
+<td>whole numbers</td>
+<td><code>1</code>,<code>-999</code>,<code>6752</code></td>
+</tr>
+<tr>
+<td>numeric</td>
+<td>floating point numbers</td>
+<td><code>1.00</code>,<code>-9.99</code>,<code>0.6752</code></td>
+</tr>
+<tr>
+<td>logical</td>
+<td>boolean values</td>
+<td><code>TRUE</code>,<code>FALSE</code></td>
+</tr>
+<tr>
+<td>character</td>
+<td>text strings</td>
+<td><code>"some text"</code>,<code>"R is great!"</code></td>
+</tr>
+<tr>
+<td>factor</td>
+<td>associates to category labels</td>
+<td><code>"healthy"</code>,<code>"diseased"</code></td>
+</tr>
+</tbody>
+</table><p>To check the class of a variable we can use the <code>class</code> function:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">&gt; a &lt;- 'a text string'
+&gt; class(a)
+[1] "character"
+</code></pre>
+<p>Note that we can use single <code>'</code> or double <code>"</code> quote marks to define the start and end of the string e.g.<br>
+character string. Either  can be used to .</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">first_name &lt;- "harry"
+last_name &lt;- 'potter'
+# start and end quote types must match!
+</code></pre>
+<p><strong>Classes in R: collections of data</strong></p>
+
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vector</td>
+<td>series of data items (must be same type)</td>
+</tr>
+<tr>
+<td>list</td>
+<td>series of data items (can be of different types)</td>
+</tr>
+<tr>
+<td>dataframe</td>
+<td>object storing a data table (columns can be different types)</td>
+</tr>
+</tbody>
+</table><h4 id="ways-to-investigate-variables">Ways to investigate variables</h4>
+<p>We can look at the contents of a variable using the <code>print</code> command.  You may also see code examples that use alternative commands: <code>cat</code> (con<em>cat</em>entate and print)  or <code>str</code> (display <em>str</em>ucture).</p>
+<p>When we create variables we say they are added to our Environment. We can see the variables defined in our environment using the  <code>ls</code> command or to look in the Environment tab in top right RStudio panel:</p>
+<p><img src="https://lh3.googleusercontent.com/YJDlVaZyWQa1LWKHY3_d0a4TjC3TkJbjfX63h0nefzuWgQ1XSAeD8AOIwPU_QJ6sVinwd4YggxFo" alt="" title="RStudio Environment pane"><br>
+We can remove a variable from the environment using the <code>rm</code> command:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">a &lt;- 4
+ls()
+rm(a)
+ls()
+</code></pre>
+<p>To delete all variables from our environment we can use:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">rm(list = ls())
+</code></pre>
+<p>RStudio will help autocomplete your commands and variable names as you type e.g. enter the following code:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">very_long_variable_name &lt;- 999
+</code></pre>
+<p>One the next line if you type <code>very</code> you should see the autocompleted options pop up, and you can select an item using the tab key. Similarly if you type <code>sqr</code> you should see the autocomplete suggest the command <code>sqr_root</code>.</p>
+<h4 id="vectors">Vectors</h4>
+<p>The simplest way to store a set of data in R is to store it in a vector. The <code>c</code> or concatenate/combine command can be used to define a vector.</p>
+<pre><code>my_vector &lt;- c("a", "b", "c", "d", "e")
+print(my_vector)
+class(my_vector)
+str(my_vector)
+</code></pre>
+<p>Note: if you forget to use <code>c</code> when defining a function you will see an error like:</p>
+<pre><code>&gt; my_vector &lt;- ("a", "b", "c", "d", "e")
+Error: unexpected ',' in "my_vector &lt;- ("a","Error: unexpected ',' in "my_vector &lt;- ("a","
+</code></pre>
+<p><em>This can be a fairly common typo (other languages don’t use this format), so try to make note of the above message and how to fix it!</em></p>
+<p>There are some useful functions that operate on a vector:</p>
+<p><code>sum</code>, <code>length</code>, <code>min</code>, <code>max</code>, <code>range</code><br>
+<code>mean</code>, <code>median</code>, <code>var</code>, <code>sd</code><br>
+<code>quantile</code>, <code>sort</code></p>
+<p><strong>Exercises B.</strong><br>
+A seller sells iphones on ebay and wants to explore their sales data (cost of second hand <em>IPhone XS 64GB</em> in GBP £:</p>
+<pre><code>iphone_sales &lt;- c(621, 455, 650, 600, 625, 646, 640, 750, 480, 629, 690, 600)
+</code></pre>
+<p>Use the above commands to answer the following questions:</p>
+<ol>
+<li>What is the total money that has been raised?<br>
+Hint: <code>sum(iphone_sales)</code></li>
+<li>How many iphones sales are in the data?</li>
+<li>What was the mean price paid?</li>
+<li>What was the median price paid?</li>
+<li>What was the maximum price paid?</li>
+<li>What was the minimum price paid?</li>
+</ol>
+<p>The following data records the birth weight in kg of 10 babies (check resources for full data set).</p>
+<pre><code>birth_weight &lt;- c(2.1, 1.57, 1.99, ... )
+</code></pre>
+<p>Use R commands to answer the following questions:</p>
+<ol start="7">
+<li>What was the mean birth weight?</li>
+<li>What was the variance and standard deviation in the birth weight distribution?</li>
+<li>Check that the values for the last question are in agreement. (Hint: recall the relationship between standard deviation and variance).</li>
+<li>What was the range of birth weights?</li>
+<li>What weight range accounts for 95% of all births (so that 2.5% are lower and 2.5% are higher)</li>
+<li>How can we obtain a sorted set of the data?</li>
+</ol>
+<h4 id="operations-on-vectors">Operations on vectors</h4>
+<p>We can also apply mathematical operators to vectors:</p>
+<p>Create the following vectors in R:</p>
+<pre><code>a &lt;- c(1,2,3,4,5)
+b &lt;- c(6,7,8,9,10)
+</code></pre>
+<p>Try out the following commands to understand how R handles calculations with vectors:</p>
+<pre><code>a + 2
+a**2
+log(a)
+c &lt;- a+b
+c
+d &lt;- a**b
+d
+</code></pre>
+<p>If we ask R to perform a calculation with vectors of different lengths R will <strong>recycle</strong> the numbers from the shorter vector to carry out the calculation e.g.</p>
+<pre><code>&gt; c(1,2,3,4,5,6) + c(10,0) 
+[1] 11  2 13  4 15  6
+</code></pre>
+<p>This can be useful, but can also hide issues (e.g. R won’t necessarily tell us when the vectors in a calculation have different lengths).</p>
+<h4 id="generating-vectors">Generating vectors</h4>
+<p>The <code>rep</code> command lets us generate a vector by replicating a single value (or set of values):</p>
+<pre><code># vector filled with 0 repeated five times
+a &lt;- rep(0,5)
+# vector filled with 0 1 repeated three times
+b &lt;- rep(c(0,1),3)
+</code></pre>
+<p>The <code>seq</code> function lets us generate a sequence in R. To use it you must include a start and end value:</p>
+<pre><code>&gt; seq(1,10)
+ [1]  1  2  3  4  5  6  7  8  9 10
+</code></pre>
+<p>Here 1 and 10 are the <code>seq</code> function’s arguments. In general to find out what arguments a function uses we look at the function documentation using the <code>help</code> command.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">help(seq)
+# shortcut
+?seq
+</code></pre>
+<p>When a function can take multiple/optional arguments we specify the argument names in our function calls:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">seq(from = 1, to = 5)
+</code></pre>
+<p>Look at the documentation for <code>seq</code> and use this to generate sequences:</p>
+<ol>
+<li>sequence from 0 to 100 in steps of 10</li>
+<li>sequence from 0 to 10 in steps of 2.5</li>
+<li>sequence running from 1 to 2 that has length 11 items</li>
+</ol>
+<p>As a shortcut R can also use the colon <code>:</code> to specify a number sequence:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">1:10
+</code></pre>
+<h4 id="generating-random-sets">Generating random sets</h4>
+<p>It can also be useful to generate vectors filled with random numbers:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined"># random number drawn from uniform distribution from interval 0 to 1
+a &lt;- runif(10)
+</code></pre>
+<pre><code># random number drawn from normal distribution with mean 0 and standard deviation 1.
+b &lt;- rnorm(20)
+</code></pre>
+<p>To generate a set of random integers we can sample values from a generated sequence:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">lottery_numbers = 1:49
+winning_set = sample(lottery_numbers, size=6, replace=FALSE) 
+</code></pre>
+<p>Note computers generate pseudo-random numbers according to an algorithm. The starting point for the algorithm is called the random seed. If the seed is unspecified this is set to an arbitrary number (e.g. last  random value generated or the current time) but for reproducibility it can be useful to specify a starting seed:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">set.seed(100)
+runif(1)
+</code></pre>
+<pre><code>[1] 0.3077661 
+</code></pre>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">set.seed(100)
+runif(1)
+</code></pre>
+<pre><code>[1] 0.3077661 
+</code></pre>
+<p>You can choose any number to be the seed. What is important is that  someone using the same seed can reproduce your work. As an interesting story the fact that numbers generated by computers are only pseudorandom has been used to <a href="https://www.nytimes.com/interactive/2018/05/03/magazine/money-issue-iowa-lottery-fraud-mystery.html">“win the lottery”</a></p>
+<h4 id="loops">Loops</h4>
+<p>Loops allow us to cycle through a set of instructions, which can also be a useful tool to generate data:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">output_vals &lt;- rep(0,10)
+output_vals[1] &lt;- 1
+for(i in 2:10) {
+  output_vals[i] &lt;- output_vals[i-1]*2
+}
+output_vals
+</code></pre>
+<p>Note that in R, it is common to create the object to store the output of a <em>for</em> loop before the loop is started (this helps ensure code runs efficiently).</p>
+<p><strong>Exercises C.</strong><br>
+Write R code to generate the following vectors:</p>
+<ol>
+<li>Your name e.g.</li>
+</ol>
+<pre><code>print(my_name)
+[1] "Philip" "William" "Lewis"
+</code></pre>
+<ol start="2">
+<li>The numbers 1 to 6</li>
+<li>Numbers 0 to 2 in steps of 0.2</li>
+<li>Five numbers drawn at random between between 0 and 10.</li>
+<li>Four items drawn from the vector:</li>
+</ol>
+<pre><code>coin_flip &lt;- c("Heads", "Tails")
+</code></pre>
+<ol start="6">
+<li>Three numbers from a normal distribution with mean = 100, and standard deviation = 30, with initial seed set to <code>1</code>.</li>
+</ol>
+<h4 id="retrieving-data-from-vectors">Retrieving data from vectors</h4>
+<p>We can access an item in a vector using the item index (first item has index 1, second index 2 etc):</p>
+<p><strong>single index method</strong></p>
+<pre><code>my_vector &lt;- c("a", "b", "c", "d", "e")
+my_vector[1]
+</code></pre>
+<p><strong>multiple index method</strong><br>
+Or use a vector of indices to select multiple items:</p>
+<pre><code>my_vector &lt;- c("a", "b", "c", "d", "e")
+my_vector[c(1,3,5)]
+</code></pre>
+<p><strong>index slice method</strong></p>
+<p>Or using <code>:</code> to make a sequence of indices to select:</p>
+<pre><code>my_vector[1:3]
+</code></pre>
+<p><strong>negative index method</strong></p>
+<p>If we want all items <em>except</em> certain indicex, we can specify the selction using the <code>-</code> operator:</p>
+<pre><code>my_vector[-1]
+</code></pre>
+<pre><code>[1]  "b", "c", "d", "e"
+</code></pre>
+<pre><code>my_vector[-c(2,4,5)]
+</code></pre>
+<pre><code>[1]  "a", "c"
+</code></pre>
+<p><strong>Exercises D.</strong><br>
+<code>letters</code> is an inbuilt vector that contains the letters of the alphabet.</p>
+<pre><code>print(letters)
+[1] "a" "b" "c" "d" ...
+</code></pre>
+<p>Write R code to make the following selections:</p>
+<ol>
+<li>
+<p>Letter 18 in the alphabet.</p>
+</li>
+<li>
+<p>The first three letters in the alphabet.</p>
+</li>
+<li>
+<p>Just letters in positions 1, 5, 9, 15, 21.</p>
+</li>
+<li>
+<p>All letters except those in positions 1, 5, 9, 15, 21.</p>
+</li>
+<li>
+<p>The last 3 letters in the alphabet.</p>
+</li>
+<li>
+<p>Can you:<br>
+<em>a.</em> Repeat part 5. so that it would also work to select the last 3 items of a differently length list?<br>
+<em>b.</em> Make a selection that translates to:<br>
+<code>"h", "e", "l", "l", "o", "w", "o", "r", "l", "d"</code></p>
+</li>
+</ol>
+<p>Hint. The command <code>View(letters)</code> will open up an indexed view of the letters vector so you can select the right ones easily.</p>
+<h4 id="logical-data-tests-and-operations">Logical data, tests and operations</h4>
+<p>R lets us make comparison tests:</p>
+
+<table>
+<thead>
+<tr>
+<th>symbol</th>
+<th>description</th>
+<th>example: <code>TRUE</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;</code></td>
+<td>less than</td>
+<td><code>1 &lt; 2</code></td>
+</tr>
+<tr>
+<td><code>&lt;=</code></td>
+<td>less than or equal to</td>
+<td><code>1 &lt;= 1</code></td>
+</tr>
+<tr>
+<td><code>&gt;</code></td>
+<td>greater than</td>
+<td><code>3 &gt; 1</code></td>
+</tr>
+<tr>
+<td><code>&gt;=</code></td>
+<td>greater than or equal to</td>
+<td><code>4 &gt;= 4</code></td>
+</tr>
+<tr>
+<td>==</td>
+<td>is equal to</td>
+<td><code>2 == 2</code></td>
+</tr>
+<tr>
+<td>!=</td>
+<td>is not equal to</td>
+<td><code>3 != 4</code></td>
+</tr>
+</tbody>
+</table><p>Note: Be careful not to mix up <code>=</code> and <code>==</code> :</p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>=</code></td>
+<td>used to set a variable</td>
+</tr>
+<tr>
+<td><code>==</code></td>
+<td>used as a test for equality.</td>
+</tr>
+</tbody>
+</table><p>Here are some examples of usage:</p>
+<pre><code>a &lt;- 4
+b &lt;- 100
+c &lt;- "harry"
+</code></pre>
+<p>Check if <code>a</code> is greater than <code>1</code>:</p>
+<pre><code>a &gt; 1    
+</code></pre>
+<p>Check if <code>a</code> is less or equal to <code>4</code></p>
+<pre><code>a &lt;= 4  
+</code></pre>
+<p>Check if <code>c</code> is equal to <code>"ron"</code>:</p>
+<pre><code>c == "harry"
+</code></pre>
+<p>Check if <code>b</code> is not equal to <code>1000</code></p>
+<pre><code>b != 1000
+</code></pre>
+<p>We can combine tests using <code>&amp;</code> <code>|</code> and <code>!</code>:</p>
+<p><strong>AND</strong> <code>&amp;</code><br>
+means  <code>TRUE</code> if <em>both</em> conditions are met<br>
+so <code>FALSE</code> if <em>either</em> of the conditions are not met</p>
+<pre><code>age &lt;- 12
+age &gt; 5  &amp; age &lt; 18
+[1] TRUE
+</code></pre>
+<p><strong>OR</strong> <code>|</code><br>
+means <code>TRUE</code> if <em>either</em> of the conditions is met<br>
+so <code>FALSE</code> if <em>both</em> conditions are not met</p>
+<pre><code>age &lt;- 35
+age &lt; 18 | age &gt; 65
+[1] TRUE
+</code></pre>
+<p><strong>NOT</strong> <code>!</code><br>
+allows us to invert a condition, so will produce <code>TRUE</code> if the condition is <em>not</em> met.</p>
+<pre><code>risk_level &lt;- "medium"
+! risk_level=="low"
+[1] TRUE
+</code></pre>
+<p><strong>Brackets</strong>  <code>(...)</code><br>
+Just as brackets can be used to group mathematical expressions, they can also be used to group more complex logical tests:</p>
+<pre><code>(age &lt; 18 | age &gt;  65) &amp; risk_level == 'high'
+</code></pre>
+<h4 id="working-with-logical-data">Working with logical data</h4>
+<p>We can store logical values into variables:</p>
+<pre><code>passed_exam &lt;- TRUE
+
+species = c("cat","dog","mouse")
+goes_woof = c(FALSE, TRUE, FALSE)
+likes_cheese = c(F, F, T)
+</code></pre>
+<p>Note how R allows us to use <code>T</code> and <code>F</code> as shorthand for <code>TRUE</code> and <code>FALSE</code>.</p>
+<p>We can apply tests to whole vectors:</p>
+<pre><code>my_numbers &lt;- seq(1,9)
+my_numbers &gt;= 8
+</code></pre>
+<p>Note that internally  the values <code>TRUE</code> and <code>FALSE</code> correspond to numerical values <code>0</code> and <code>1</code>:</p>
+<pre><code>&gt; TRUE + TRUE
+[1] 2
+</code></pre>
+<p>This means we can also find the total number of <code>TRUE</code> entries in a vector by applying the sum function:</p>
+<pre><code>&gt; item_in_stock &lt;- c(TRUE, TRUE, FALSE, TRUE, FALSE)
+&gt; length(item_in_stock)
+[1] 5
+&gt; sum(item_in_stock)
+[1] 3
+</code></pre>
+<h4 id="selection-of-data-using-a-logical-test">Selection of data using a logical test</h4>
+<p>We can the result of a logical test to <em><strong>select</strong></em> or <em><strong>filter</strong></em> items from vectors:</p>
+<pre><code>item_name &lt;- c("apple","banana","orange","pear","peach")
+item_stock &lt;- c(122, 0, 22, 0, 1)
+item_stock == 0
+</code></pre>
+<pre><code>[1] FALSE  TRUE FALSE  TRUE FALSE
+</code></pre>
+<pre><code>item_name[item_stock == 0]
+</code></pre>
+<pre><code>[1] "banana" "pear"
+</code></pre>
+<p>We can also filter based directly on a vector of <code>TRUE</code> or <code>FALSE</code> values:</p>
+<pre><code>&gt; on_order &lt;- c(F, T, T, T, T)
+&gt; item_name[on_order]
+[1] "banana","orange","pear","peach"
+
+</code></pre>
+<h4 id="which-function"><code>which</code> function</h4>
+<p>It can also be useful to identify which index satisfies a condition. For example:</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">students &lt;- c("ann", "bob", "carl", "david", "elle")
+results &lt;-  c( 93,    65,    45,     85,      67)
+which(results &gt; 70)
+</code></pre>
+<pre><code>[1] 1 4
+</code></pre>
+<p>We can use the resulting set of indices to select items e.g.</p>
+<pre class=" language-undefined"><code class="prism language-{r} language-undefined">students[which(results &gt; 70)]
+</code></pre>
+<pre><code>[1] "ann"   "david"
+</code></pre>
+<p><strong>Exercises E.</strong></p>
+<p>Copy and paste the R code to set up the students and grades data:</p>
+<pre><code>students &lt;- c( "Lauren",  "Marcelino", ..
+grades &lt;- c(78, 83, 60, ... 
+</code></pre>
+<p>Using the R commands we have been using answer the following:</p>
+<ol>
+<li>What was the mean grade?</li>
+<li>What was the maximum grade?</li>
+<li>How many students scored over 70 or higher?</li>
+<li>What were the scores that were below 60?</li>
+<li>What were the names of the students that were below 60? Hint: Use the <code>which</code> command.</li>
+<li>Create the lists <code>good_grades</code> and <code>good_students</code> containing the data of the students who scored more than the average grade.</li>
+</ol>
+<p><strong>Data for all exercises:</strong></p>
+<pre><code>iphone_sales &lt;- c(621, 455, 650, 600, 625, 646, 640, 750, 480, 629, 690, 600)
+</code></pre>
+<pre><code>birth_weights &lt;- c(2.57, 3.25, 2.51, 3.04, 2.12, 2.54, 2.39, 2.55, 3.2, 2.66, 2.77, 2.8, 2.45, 2.13, 2.57, 2.75, 3.11, 2.6, 2.58, 3.35, 2.39, 2.87, 2.47, 2.87, 2.08, 2.49, 2.59, 3.1, 2.51, 2.82, 2.53, 2.36,  2.98, 2.52, 3.24, 2.88, 2.64, 2.88, 2.68, 2.88, 2.54, 1.85, 2.76, 2.96, 2.31, 2.25, 2.53, 2.49, 2.87, 2.75, 3.11, 3.36, 2.69, 2.69, 2.8, 2.57, 2.65, 2.66, 2.81, 2.76, 2.6, 2.72, 2.63, 3.02, 2.7, 2.45, 2.6, 2.42, 2.78, 3.04, 2.95, 2.78, 2.66, 2.82, 2.68, 1.88, 2.84, 2.55, 3.21, 3.57, 2.2, 2.94, 2.75, 2.49, 2.95, 2.98, 2.66, 2.58, 2.27, 2.45, 2.61, 2.6, 3.08, 2.59, 3.46, 2.53, 3.33, 2.76, 2.27, 2.93)
+</code></pre>
+<pre><code>students &lt;- c( "Lauren",  "Marcelino",  "Ramona",  "Lonna", "Justine",  "Sanjuanita",  "Marquitta",  "Cristobal",  "Natalya",  "Shantae", "Jesusa",  "Florence",  "Manual",  "Rosendo",  "Gigi",  "Angelic", "Manie",  "Setsuko",  "Rosetta",  "Sherell",  "Carlota",  "Mark",  "Tawny",  "Denae",  "Kathe",  "Signe",  "Milissa",  "Maren", "Raylene",  "Keshia",  "Theresia",  "Josiah",  "Hillary", "Kourtney",  "Chase" )
+
+grades &lt;- c(78, 83, 60, 65, 67, 65, 56, 68, 86, 70, 55, 74, 73, 55, 83, 63, 60, 59, 70, 54, 63, 65, 69, 48, 63, 73, 59, 58, 65, 63, 61, 59, 84, 68, 69)
+</code></pre>
+</div>
+</body>
+
+</html>

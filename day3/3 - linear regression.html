@@ -1,0 +1,323 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3 - linear regression</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="bivariate-linear-regression-models">Bivariate linear regression models</h1>
+<h3 id="packages">Packages</h3>
+<p>We will need an additional package in this week’s seminar. The package  <code>texreg</code>  makes it easy to produce publication quality output from our regression models. We’ll discuss this package in more detail as we go along. For now let’s load the package with the  <code>library()</code>  function.</p>
+<pre><code>library(texreg)
+</code></pre>
+<p>We will use a dataset collected by the US census bureau that contains several socioeconomic indicators about different counties in the USA  .</p>
+<pre><code>dat &lt;- read_csv("communities.csv")
+</code></pre>
+<p>We will be exploring the relationship between the unemployment rate and low education. The variable names for these variables are not terribly clear and so first we will rename these variables using the  <code>names()</code>  function and the  <code>which()</code>  function from last week.</p>
+<pre><code>names(dat)
+</code></pre>
+<pre><code> [1] "state"           "county"          "community"      
+ [4] "communityname"   "fold"            "population"     
+ [7] "householdsize"   "racepctblack"    "racePctWhite"   
+[10] "racePctAsian"    "racePctHisp"     "agePct12t21"    
+[13] "agePct12t29"     "agePct16t24"     "agePct65up"     
+[16] "numbUrban"       "pctUrban"        "medIncome"      
+[19] "pctWWage"        "pctWFarmSelf"    "pctWInvInc"     
+[22] "pctWSocSec"      "pctWPubAsst"     "pctWRetire"     
+[25] "medFamInc"       "perCapInc"       "whitePerCap"    
+[28] "blackPerCap"     "indianPerCap"    "AsianPerCap"    
+[31] "OtherPerCap"     "HispPerCap"      "NumUnderPov"    
+[34] "PctPopUnderPov"  "PctLess9thGrade" "PctNotHSGrad"   
+[37] "PctBSorMore"     "PctUnemployed"  
+</code></pre>
+<pre><code>names(dat)[which(names(dat) == "PctUnemployed")] &lt;- "UnemploymentRate"
+names(dat)[which(names(dat) == "PctNotHSGrad")] &lt;- "NoHighSchool"
+</code></pre>
+<p>The first variable (<code>UnemploymentRate</code>) measures the proportion of citizens in each community who are unemployed. The second variable (<code>NoHighSchool</code>) measures the proportion of citizens in each community who failed to finish high-school.</p>
+<p>If we summarize these variables with the  <code>summary()</code>  function, we will see that they are both measured as proportions (they vary between 0 and 1):</p>
+<pre><code>summary(dat$UnemploymentRate)
+</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.2200  0.3200  0.3635  0.4800  1.0000 
+</code></pre>
+<pre><code>summary(dat$NoHighSchool)
+</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.2300  0.3600  0.3833  0.5100  1.0000 
+</code></pre>
+<p>It will be a little easier to interpret the regression output if we convert these to percentages rather than proportions. We can do this with the following lines of code:</p>
+<pre><code>dat$UnemploymentRate &lt;- dat$UnemploymentRate*100
+dat$NoHighSchool &lt;- dat$NoHighSchool*100
+</code></pre>
+<p>We can begin by drawing a scatterplot with the percentage of unemployed people on the y-axis and the percentage of adults without high-school education on the x-axis.</p>
+<pre><code>plot(
+  UnemploymentRate ~ NoHighSchool, data = dat,
+  xlab = "Adults without High School education (%)",
+  ylab = "Unemployment (%)",
+  frame.plot = FALSE,
+  pch = 16,
+  col = rgb(red = 110, green = 200, blue = 110, alpha = 80, maxColorValue = 255)
+)
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-138-1.png" alt=""></p>
+<p>From looking at the plot, what is the association between the unemployment rate and lack of high-school level education?</p>
+<p>In order to answer that question empirically, we will run a linear regression using the  <a href="http://bit.ly/R_lm"><code>lm()</code></a>  function in R. The  <a href="http://bit.ly/R_lm"><code>lm()</code></a>  function needs to know a) the relationship we’re trying to model and b) the dataset for our observations. The two arguments we need to provide to the  <a href="http://bit.ly/R_lm"><code>lm()</code></a>  function are described below.</p>
+<p><code>formula</code></p>
+<ul>
+<li>The  <code>formula</code>  describes the relationship between the dependent and independent variables, for example  <code>dependent.variable ~ independent.variable</code><br>
+In our case, we’d like to model the relationship using the formula:  <code>UnemploymentRate ~ NoHighSchool</code></li>
+</ul>
+<p><code>data</code></p>
+<ul>
+<li>This is simply the name of the dataset that contains the variable of interest. In our case, this is the merged dataset called  <code>communities</code>.</li>
+</ul>
+<p>For more information on how the  <code>lm()</code>  function works, type help(lm) in R.</p>
+<pre><code>model1 &lt;- lm(UnemploymentRate ~ NoHighSchool, data = dat)
+</code></pre>
+<p>The  <a href="http://bit.ly/R_lm"><code>lm()</code></a>  function has modeled the relationship between  <code>PctUnemployed</code>  and  <code>NoHighSchool</code>  and we’ve saved it in an object called  <code>model1</code>. Let’s use the  <a href="http://bit.ly/R_summary"><code>summary()</code></a>  function to see what this linear model looks like.</p>
+<pre><code>summary(model1)
+</code></pre>
+<pre><code>
+Call:
+lm(formula = UnemploymentRate ~ NoHighSchool, data = dat)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-42.347  -8.499  -1.189   7.711  56.470 
+
+Coefficients:
+             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   7.89520    0.64833   12.18   &lt;2e-16 ***
+NoHighSchool  0.74239    0.01496   49.64   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 13.52 on 1992 degrees of freedom
+Multiple R-squared:  0.553, Adjusted R-squared:  0.5527 
+F-statistic:  2464 on 1 and 1992 DF,  p-value: &lt; 2.2e-16
+</code></pre>
+<h4 id="interpreting-regression-output">Interpreting Regression Output</h4>
+<p>The output from  <a href="http://bit.ly/R_lm"><code>lm()</code></a>  might seem overwhelming at first so let’s break it down one item at a time.</p>
+<p><img src="https://uclspp.github.io/PUBLG100/img/lm.png" alt=""></p>
+<h1 id="section"></h1>
+<ol>
+<li>
+<p>The  <em>dependent</em>  variable, also sometimes called the outcome variable. We are trying to model the effects of  <code>NoHighSchool</code>  on  <code>UnemploymentRate</code>  so  <code>UnemploymentRate</code>  is the  <em>dependent</em>  variable.</p>
+</li>
+<li>
+<p>The  <em>independent</em>  variable or the predictor variable. In our example,  <code>NoHighSchool</code>  is the  <em>independent</em>  variable.</p>
+</li>
+<li>
+<p>The differences between the observed values and the predicted values are called  <em>residuals</em>. R produces a summary of the residuals.</p>
+</li>
+<li>
+<p>The  <em>coefficients</em>  for the intercept and the  <em>independent</em>  variables.        Using the  <em>coefficients</em>  we can write down the relationship between the  <em>dependent</em>  and the  <em>independent</em>  variables as:</p>
+<p><code>UnemploymentRate</code>  = 7.8952023 + ( 0.7423853 *  <code>NoHighSchool</code>  )</p>
+<p>This tells us that for each unit increase in the variable  <code>NoHighSchool</code>, the  <code>UnemploymentRate</code>  increases by 0.7423853.</p>
+</li>
+<li>
+<p>The  <em>p-value</em>  for each of the coefficients in the model. Recall that according to the null hypotheses, the value of the coefficient of interest is zero. The  <em>p-value</em>  tells us whether can can reject the null hypotheses or not.</p>
+</li>
+<li>
+<p>The  <em>standard error</em>  estimates the standard deviation of the sampling distribution of the coefficients in our model. We can think of the  <em>standard error</em>  as the measure of precision for the estimated coefficients.</p>
+</li>
+<li>
+<p>The  <em>t statistic</em>  is obtained by dividing the  <em>coefficients</em>  by the  <em>standard error</em>.</p>
+</li>
+<li>
+<p>The  <em>R-squared</em>  and  <em>adjusted R-squared</em>  tell us how much of the variance in our model is accounted for by the  <em>independent</em>  variable. The  <em>adjusted R-squared</em>  is always smaller than  <em>R-squared</em>  as it takes into account the number of  <em>independent</em>  variables and degrees of freedom.</p>
+</li>
+</ol>
+<p>Now let’s add a regression line to the scatter plot using the  <a href="http://bit.ly/R_abline"><code>abline()</code></a>  function.</p>
+<pre><code>## First we run the same "plot" function as before
+plot(
+  UnemploymentRate ~ NoHighSchool, data = dat,
+  xlab = "Adults without High School education (%)",
+  ylab = "Unemployment (%)",
+  frame.plot = FALSE,
+  pch = 16,
+  col = rgb(red = 110, green = 200, blue = 110, alpha = 80, maxColorValue = 255)
+)
+
+## Then we use the "abline" function to plot the regression line from our saved model object
+abline(model1, lwd = 3,
+       col = rgb(red = 230, green = 150, blue = 0, alpha = 255, maxColorValue = 255))
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-141-1.png" alt=""></p>
+<p>We can see by looking at the regression line that it matches the coefficients we estimated above. For example, when  <code>NoHighSchool</code>  is equal to zero (i.e. where the line intersects the Y-axis), the predicted value for  <code>UnemploymentRate</code>  seems to be above 0 but below 10. This is good, as the  _intercept_coefficient we estimated in the regression was  <code>7.895</code>.</p>
+<p>Similarly, the coefficient for the variable  <code>NoHighSchool</code>  was estimated to be  <code>0.74239</code>, which implies that a one point increase in the percentage of citizens with no high-school education is associated with about .74 of a point increase in the percentage of citizens who are unemployed. The line in the plot seems to reflect this: it is upward sloping, so that higher levels of the no high-school variable are associated with higher levels of unemployment, but the relationship is not quite 1-to-1. That is, for each additional percentage point of citzens without high school education, the percentage of citizens who are unemployed increases by a little less than one point.</p>
+<p>While the  <a href="http://bit.ly/R_summary"><code>summary()</code></a>  function provides a slew of information about a fitted regression model, we often need to present our findings in easy to read tables similar to what you see in journal publications. The  <code>texreg</code>  package we installed earlier allows us to do just that.</p>
+<p>Let’s take a look at how to display the output of a regression model on the screen using the  <a href="http://bit.ly/R_texreg"><code>screenreg()</code></a>  function from  <code>texreg</code>.</p>
+<pre><code>screenreg(model1)
+</code></pre>
+<pre><code>
+=========================
+              Model 1    
+-------------------------
+(Intercept)      7.90 ***
+                (0.65)   
+NoHighSchool     0.74 ***
+                (0.01)   
+-------------------------
+R^2              0.55    
+Adj. R^2         0.55    
+Num. obs.     1994       
+RMSE            13.52    
+=========================
+*** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05
+</code></pre>
+<p>Here, the output includes some of the most salient details we need for interpretation. We can see the coefficient for the  <code>NoHighSchool</code>  variable, and the estimated coefficient for the intercept. Below these numbers, in brackets, we can see the standard errors. The table also reports the <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">R^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.00773em;">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span>, the adjusted <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">R^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.00773em;">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span>, the number of observations (n) and the root-mean-squared-error (RMSE).</p>
+<p>One thing to note is that the table does not include either t-statistics or p-values for the estimated coefficents. Instead, the table employs a common device of using stars to denote whether a variable is statistically significant at a given alpha level.</p>
+<ul>
+<li><code>***</code>  indicates that the coefficient is significant at the 99.9% confidence level (alpha = 0.001)</li>
+<li><code>**</code>  indicates that the coefficient is significant at the 99% confidence level (alpha = 0.01)</li>
+<li><code>*</code>  indicates that the coefficient is significant at the 95% confidence level (alpha = 0.05)</li>
+</ul>
+<p>Returning to our example, are there other variables that might affect the unemployment rate in our dataset? For example, is the unemployment rate higher in rural areas? To answer this question, we can swap  <code>NoHighSchool</code>  for a different independent variable. Let’s use the variable  <code>population</code>, which measures the proportion of adults who live in cities (rather than rural areas). Again, we can transform this proportion to a percentage with the following code:</p>
+<pre><code>dat$population &lt;- dat$population*100
+</code></pre>
+<p>Let’s fit a linear model using  <code>population</code>  as the independent variable:</p>
+<pre><code>model2 &lt;- lm(UnemploymentRate ~ population, data = dat)
+summary(model2)
+</code></pre>
+<pre><code>
+Call:
+lm(formula = UnemploymentRate ~ population, data = dat)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-35.252 -14.715  -3.946  11.054  64.980 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 35.02042    0.49206  71.171  &lt; 2e-16 ***
+population   0.23139    0.03532   6.552  7.2e-11 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 20.01 on 1992 degrees of freedom
+Multiple R-squared:  0.0211,    Adjusted R-squared:  0.02061 
+F-statistic: 42.93 on 1 and 1992 DF,  p-value: 7.201e-11
+</code></pre>
+<p>We can show regression line from the  <code>model2</code>  just like we did with our first model.</p>
+<pre><code>plot(
+  UnemploymentRate ~ population, data = dat,
+  xlab = "Adults living in cities (%)",
+  ylab = "unemployment (%)",
+  frame.plot = FALSE,
+  pch = 16,
+  col = rgb(red = 110, green = 200, blue = 110, alpha = 100, maxColorValue = 255)
+  )
+abline(model2, lwd = 2,
+       col = rgb(red = 230, green = 150, blue = 0, alpha = 255, maxColorValue = 255))
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-145-1.png" alt=""></p>
+<p>So we now have two models! Often, we will want to compare two estimated models side-by-side. We might want to say how the coefficients for the independent variables we included differ in  <code>model1</code>  and  <code>model2</code>, for example. Or we may want to ask: Does  <code>model2</code>  offer a better fit than  <code>model1</code>?</p>
+<p>It is often useful to print the salient details from the estimated models side-by-side. We can do this by using the  <a href="http://bit.ly/R_texreg"><code>screenreg()</code></a>  function.</p>
+<pre><code>screenreg(list(model1, model2))
+</code></pre>
+<pre><code>
+======================================
+              Model 1      Model 2    
+--------------------------------------
+(Intercept)      7.90 ***    35.02 ***
+                (0.65)       (0.49)   
+NoHighSchool     0.74 ***             
+                (0.01)                
+population                    0.23 ***
+                             (0.04)   
+--------------------------------------
+R^2              0.55         0.02    
+Adj. R^2         0.55         0.02    
+Num. obs.     1994         1994       
+RMSE            13.52        20.01    
+======================================
+*** p &lt; 0.001, ** p &lt; 0.01, * p &lt; 0.05
+</code></pre>
+<p>What does this table tell us?</p>
+<ul>
+<li>The first column replicates the results from our first model. We can see that a one point increase in the percentage of citizens without high-school education is associated with an increase of 0.74 percentage points of unemployment, on average.</li>
+<li>The second column gives us the results from the second model. Here, a one point increase in the percentage of citizens who live in cities is associated with an increase of 0.23 percentage points of unemployment, on average</li>
+<li>We can also compare the <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">R^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.00773em;">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span> values from the two models. The <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">R^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.814108em; vertical-align: 0em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.00773em;">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height: 0.814108em;"><span class="" style="top: -3.063em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span> for  <code>model1</code>  is 0.55 and for  <code>model2</code>  is 0.02. This suggests that the model with  <code>NoHighSchool</code>  as the explanatory variable explains about 55% of the variation in unemployment. The model with  <code>population</code>  as the explanatory variable, on the other hand, explains just 2% of the variation in unemployment.</li>
+</ul>
+<h3 id="fitted-values">Fitted values</h3>
+<p>Once we have estimated a regression model, we can use that model to produce fitted values. Fitted values represent our “best guess” for the value of our dependent variable for a specific value of our independent variable.</p>
+<p>To calculate fitted values we use the  <code>predict()</code>  function. Let’s say that, on the basis of  <code>model1</code>  we would like to know what the unemployment rate is likely to be for a community where the percentage of adults without a high-school education is equal to 10%.</p>
+<p>The predict function takes two main arguments.</p>
+<p><code>object</code></p>
+<ul>
+<li>The  <code>object</code>  is the model object that we would like to use to produce fitted values. Here, we would like to base the analysis on  <code>model1</code>  and so specify  <code>object = model1</code>  here.</li>
+</ul>
+<p><code>newdata</code></p>
+<ul>
+<li>This is an optional argument which we use to specify the values of our independent variable(s) that we would like fitted values for. If we leave this argument empty, R will automatically calculate fitted values for all of the observations in the data that we used to estimate the original model.</li>
+</ul>
+<p>Note: If we include a <code>newdata</code> argument, we need to provide a  <code>data.frame</code>  which has a variable with the <em>same name</em> as the independent variable in our model. Here, we specify  <code>newdata = data.frame(NoHighSchool = 10)</code>, as we would like the fitted value for a community where 10% of adults did not complete high-school.</p>
+<pre><code>predict(model1, newdata = data.frame(NoHighSchool = 10))
+</code></pre>
+<pre><code>       1 
+15.31906 
+</code></pre>
+<p>Note that in this simple case, we can calculate the fitted value manually. The fitted value formula is:</p>
+<p><span class="katex--display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><msub><mi>y</mi><mi>i</mi></msub><mo>^</mo></mover><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><mo>×</mo><msub><mi>x</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\hat{y_i}=\beta_0+\beta_1\times x_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.69444em;"><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord"><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.311664em;"><span class="" style="top: -2.55em; margin-left: -0.03588em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="accent-body" style="left: -0.25em;">^</span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.19444em;"><span class=""></span></span></span></span></span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.58056em; vertical-align: -0.15em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.311664em;"><span class="" style="top: -2.55em; margin-left: 0em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span></span></p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">x_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.58056em; vertical-align: -0.15em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.311664em;"><span class="" style="top: -2.55em; margin-left: 0em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span>, <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">y_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.625em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.311664em;"><span class="" style="top: -2.55em; margin-left: -0.03588em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span></td>
+<td>set of data points</td>
+</tr>
+<tr>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><msub><mi>y</mi><mi>i</mi></msub><mo>^</mo></mover></mrow><annotation encoding="application/x-tex">\hat{y_i}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.69444em;"><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord"><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.311664em;"><span class="" style="top: -2.55em; margin-left: -0.03588em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="accent-body" style="left: -0.25em;">^</span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.19444em;"><span class=""></span></span></span></span></span></span></span></span></span></td>
+<td>predicted value for datapoint <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">y_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.625em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.311664em;"><span class="" style="top: -2.55em; margin-left: -0.03588em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span></td>
+</tr>
+<tr>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span></td>
+<td>intercept of fitted <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.625em; vertical-align: -0.19444em;"></span><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span></span></span></span></span> <em>vs</em> <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.43056em; vertical-align: 0em;"></span><span class="mord mathdefault">x</span></span></span></span></span> line</td>
+</tr>
+<tr>
+<td><span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">\beta_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.05278em;">β</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.301108em;"><span class="" style="top: -2.55em; margin-left: -0.05278em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span></span></span></td>
+<td>gradient of fitted <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.625em; vertical-align: -0.19444em;"></span><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span></span></span></span></span> <em>vs</em> <span class="katex--inline"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.43056em; vertical-align: 0em;"></span><span class="mord mathdefault">x</span></span></span></span></span> line</td>
+</tr>
+</tbody>
+</table><p>So, we can substitute in the relevant coefficients from  <code>model1</code>  and the number 10 for our X variable (as we want a fitted value for when X is equal to 10), and we get:</p>
+<p><span class="katex--display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><msub><mi>y</mi><mi>i</mi></msub><mo>^</mo></mover><mo>=</mo><mn>7.9</mn><mo>+</mo><mn>0.74</mn><mo>×</mo><mn>10</mn><mo>=</mo><mn>15.3</mn></mrow><annotation encoding="application/x-tex">\hat{y_i}=7.9+0.74\times 10=15.3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.88888em; vertical-align: -0.19444em;"></span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.69444em;"><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord"><span class="mord mathdefault" style="margin-right: 0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.311664em;"><span class="" style="top: -2.55em; margin-left: -0.03588em; margin-right: 0.05em;"><span class="pstrut" style="height: 2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.15em;"><span class=""></span></span></span></span></span></span></span></span><span class="" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="accent-body" style="left: -0.25em;">^</span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.19444em;"><span class=""></span></span></span></span></span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">7</span><span class="mord">.</span><span class="mord">9</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.72777em; vertical-align: -0.08333em;"></span><span class="mord">0</span><span class="mord">.</span><span class="mord">7</span><span class="mord">4</span><span class="mspace" style="margin-right: 0.222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right: 0.222222em;"></span></span><span class="base"><span class="strut" style="height: 0.64444em; vertical-align: 0em;"></span><span class="mord">1</span><span class="mord">0</span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 0.64444em; vertical-align: 0em;"></span><span class="mord">1</span><span class="mord">5</span><span class="mord">.</span><span class="mord">3</span></span></span></span></span></span></p>
+<p>which is the same as the result we obtained from the  <code>predict()</code>  function! The good thing about the  <code>predict()</code>  function, however, is that we will be able to use it for  <em>all</em>  the models we study on this course, and it can be useful for calculating many different fitted values. This will save a lot of time which might be wasted doing the calculations by hand.</p>
+<h4 id="additional-resources">Additional Resources</h4>
+<ul>
+<li><a href="http://altaf.shinyapps.io/linear-regression">Linear Regression - Interactive App</a></li>
+</ul>
+<h3 id="exercises">Exercises</h3>
+<ol>
+<li>Open a new notebook and save it as <code>lin_regression.Rmd</code></li>
+<li>Copy across your code to load the <code>QoC2012</code> Quality of Governance dataset.</li>
+<li>Estimate a model that explains <code>gdp</code> using <code>stability</code></li>
+<li>Plot a scatterplot of the relationship and add the regression line to the plot.</li>
+<li>Interpret the regression output and try to imagine that you are communicating your results to someone who does not know anything about statistics.</li>
+<li>Create a new column <code>log_gdp</code> that contains the <code>log</code> value of the <code>gpd</code> columns.</li>
+<li>Repeat the analysis. How has this changed the plot?</li>
+<li>Interpret the new regression output.</li>
+<li>Compare the two models and explain which one you would choose.</li>
+<li>Produce a table with both models next to each other in some text document. You can use  <code>texreg</code>from the seminar, do it manually, or use something else.</li>
+<li>Generate a column <code>x</code> containing random data:</li>
+</ol>
+<pre><code>n &lt;- nrow(world_data)
+world_data$x &lt;- rnorm(n, mean=0, sd=10)
+</code></pre>
+<p>Construct a model that explains <code>log_gdp</code> using new variable <code>x</code>. What do you find?</p>
+<h3 id="challenges">Challenges</h3>
+<p>Edit the code in the above example to use <code>rename</code> to perform the column renaming, and <code>ggplot2</code> to draw the plots.</p>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,379 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>t.tests</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="t-test-for-difference-in-means-and-hypothesis-testing">T-test for Difference in Means and Hypothesis Testing</h1>
+<h3 id="loading-and-preparing-our-dataset">Loading and preparing our dataset</h3>
+<p>In this seminar, we will load a file in comma separated format (<code>.csv</code>). Our data comes from the  <a href="http://qog.pol.gu.se/">Quality of Government Institute</a>. The  <code>load()</code>  function from last week works only for the native R file format. To load our csv-file, we use the  <code>read_csv()</code> function.</p>
+<pre><code>library(readr)
+world_data &lt;- read_csv("QoG2012.csv")
+</code></pre>
+<p>Go ahead:</p>
+<ol>
+<li>check the dimensions of  <code>world_data</code>,</li>
+<li>find the column names of the variables of the dataset,</li>
+<li>print the first six rows of the dataset,</li>
+</ol>
+<p>The variables are only a small set from the full Quality of Governance dataset and store the following information:</p>
+
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>h_j</code></td>
+<td>1 if free judiciary (justice system operates independently from the government)</td>
+</tr>
+<tr>
+<td><code>wdi_gdpc</code></td>
+<td>Per capita wealth in US dollars</td>
+</tr>
+<tr>
+<td><code>undp_hdi</code></td>
+<td>Human development index (higher values = higher quality of life)</td>
+</tr>
+<tr>
+<td><code>wbgi_cce</code></td>
+<td>Control of corruption index (higher values = more control of corruption)</td>
+</tr>
+<tr>
+<td><code>wbgi_pse</code></td>
+<td>Political stability index (higher values = more stable)</td>
+</tr>
+<tr>
+<td><code>former_col</code></td>
+<td>1 = country was a colony once</td>
+</tr>
+<tr>
+<td><code>lp_lat_abst</code></td>
+<td>absolute latitude of country’s captial divided by 90</td>
+</tr>
+</tbody>
+</table><p>Let’s change these into human-readable names.</p>
+
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>h_j</code></td>
+<td><code>judiciary</code></td>
+</tr>
+<tr>
+<td><code>wdi_gdpc</code></td>
+<td><code>gdp</code></td>
+</tr>
+<tr>
+<td><code>undp_hdi</code></td>
+<td><code>hdi</code></td>
+</tr>
+<tr>
+<td><code>wbgi_cce</code></td>
+<td><code>corruption</code></td>
+</tr>
+<tr>
+<td><code>wbgi_pse</code></td>
+<td><code>stability</code></td>
+</tr>
+<tr>
+<td><code>former_col</code></td>
+<td><em>leave unchanged</em></td>
+</tr>
+<tr>
+<td><code>lp_lat_abst</code></td>
+<td><code>abs_lat</code></td>
+</tr>
+</tbody>
+</table><p>To do this we’ll use the <code>rename</code> function from the <code>dplyr</code> library.</p>
+<pre><code>library(dplyr)
+world_data &lt;- rename(world_data, 
+                     judiciary = h_j, 
+                     gdp = wdi_gdpc, 
+                     hdi = undp_hdi, 
+                     corruption = wbgi_cce, 
+                     stability = wbgi_pse, 
+                     abs_lat = lp_lat_abst)
+</code></pre>
+<p>Take a look at the summary of our dataset:</p>
+<pre><code>summary(world_data)
+</code></pre>
+<p>One issue is that our categorical variables  <code>judiciary</code> and <code>former_col</code> are being treated as numerical values.</p>
+<p>Let’s transform the numerical <code>0</code>,<code>1</code> values in the <code>judiciary</code> column into a categorical values using the function <code>factor</code>.</p>
+<p>To associate useful labels with the <code>0</code> <code>1</code> values, we define the <code>labels</code> to be applied to each <code>level</code> of category.</p>
+<pre><code>factor( x =        # the data column to convert
+        levels =   # vector of category values as in column provided 
+        labels =   # vector of category labels to apply )
+</code></pre>
+<pre><code>world_data$judiciary &lt;- factor(world_data$judiciary, levels=c(0,1), labels=c('controlled', 'free'))
+</code></pre>
+<p>Find out how many observations in our dataset (countries) have a free judiciary.</p>
+<pre><code>table(world_data$judiciary)
+controlled       free 
+       105         64 
+</code></pre>
+<h3 id="t-test-one-sample-hypothesis-test">T-test (one sample hypothesis test)</h3>
+<p>A knowledgeable friend declares that worldwide wealth stands at exactly 10 000 US dollars per capita today. We would like to know whether she is right and tease her relentlessly if she isn’t.</p>
+<p>So, first we take the mean of the wealth variable  <code>gdp</code>.</p>
+<pre><code>mean(world_data$gdp)
+</code></pre>
+<pre><code>[1] NA
+</code></pre>
+<p>R returns  <code>NA</code>  because for some countries we have no reliable information on their per capita wealth.  <code>NA</code>  means that the data is missing. We can tell the  <code>mean()</code>  function to estimate the mean only for those countries we have data for, we will, therefore, ignore the countries we do not have information for.</p>
+<p>We do so by setting the argument  <code>na.rm</code>  to TRUE like so:  <code>mean(dataset_name$var_name, na.rm = TRUE)</code>.</p>
+<pre><code>gdp_mean &lt;- mean(world_data$gdp, na.rm = TRUE)
+gdp_mean
+</code></pre>
+<pre><code>[1] 10184.09
+</code></pre>
+<p>Wow, our friend is quite close. Substantially, the difference of our friends claim to our estimate is small but we could still find that the difference is statistically significant (it’s a noticeable systematic difference).</p>
+<p>Because we do not have information on all countries, our 10184.09 is an estimate and the true population mean – the population here would be all countries in the world – may be 10000 as our friend claims. We test this statistically.</p>
+<p>In statistics jargon: we would like to test whether our estimate is statistically different from the 10000 figure (the null hypothesis) suggested by our friend. Put differently, we would like to know the probability that we estimate 10184.09 if the true mean of all countries is 10000.</p>
+<p>Recall, that the standard error of the mean (which is the estimate of the true standard deviation of the population mean) is estimated as:</p>
+<p><span class="katex--display"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi><mi mathvariant="normal">.</mi><mi>E</mi><mi mathvariant="normal">.</mi><mo>=</mo><mfrac><mi>σ</mi><msqrt><mi>n</mi></msqrt></mfrac></mrow><annotation encoding="application/x-tex">S.E. =\frac{\sigma}{\sqrt{n}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height: 0.68333em; vertical-align: 0em;"></span><span class="mord mathdefault" style="margin-right: 0.05764em;">S</span><span class="mord">.</span><span class="mord mathdefault" style="margin-right: 0.05764em;">E</span><span class="mord">.</span><span class="mspace" style="margin-right: 0.277778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right: 0.277778em;"></span></span><span class="base"><span class="strut" style="height: 2.03756em; vertical-align: -0.93em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 1.10756em;"><span class="" style="top: -2.30972em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height: 0.80028em;"><span class="svg-align" style="top: -3em;"><span class="pstrut" style="height: 3em;"></span><span class="mord" style="padding-left: 0.833em;"><span class="mord mathdefault">n</span></span></span><span class="" style="top: -2.76028em;"><span class="pstrut" style="height: 3em;"></span><span class="hide-tail" style="min-width: 0.853em; height: 1.08em;"><svg width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,
+-10,-9.5,-14c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54c44.2,-33.3,65.8,
+-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10s173,378,173,378c0.7,0,
+35.3,-71,104,-213c68.7,-142,137.5,-285,206.5,-429c69,-144,104.5,-217.7,106.5,
+-221c5.3,-9.3,12,-14,20,-14H400000v40H845.2724s-225.272,467,-225.272,467
+s-235,486,-235,486c-2.7,4.7,-9,7,-19,7c-6,0,-10,-1,-12,-3s-194,-422,-194,-422
+s-65,47,-65,47z M834 80H400000v40H845z"></path></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.23972em;"><span class=""></span></span></span></span></span></span></span><span class="" style="top: -3.23em;"><span class="pstrut" style="height: 3em;"></span><span class="frac-line" style="border-bottom-width: 0.04em;"></span></span><span class="" style="top: -3.677em;"><span class="pstrut" style="height: 3em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right: 0.03588em;">σ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height: 0.93em;"><span class=""></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></span></p>
+<p>Before we estimate the standard error, let’s get  <code>n</code>  (the number of observations). That is not simply the number of rows in our sample because some of the data is missing. We take the number of non-missing observations below and explain the code after.</p>
+<pre><code>n &lt;- length(world_data$gdp[!is.na(world_data$gdp)])
+n
+</code></pre>
+<pre><code>[1] 178
+</code></pre>
+<p>With the function  <code>length(world_data$gdp)</code>  we get all observations in the data, i.e. the number of rows in the dataset.  The function  <code>is.na()</code>  checks whether an observation is missing and the operator  <code>!</code>  means not. Therefore the result of <code>!is.na(world_data$gdp)</code> is a vector storing <code>TRUE</code> if the data is not <code>NA</code>, and can be used to select only these rows from the data frame <code>world_data$gdp</code>.</p>
+<p>Note. A quick way to check for the number of NA’s is: <code>summary(world_data)</code>.</p>
+<p>Now, let’s take the standard error of the mean.</p>
+<pre><code>se &lt;- sd(world_data$gdp, na.rm = TRUE) / sqrt(n)
+</code></pre>
+<p>We have enough information to construct our confidence interval. Our sample is large enough to assume that the sampling distribution is approximately normal. So, we can go  1.96  standard deviations to the left and to the right of the mean to construct our  95%  confidence interval.</p>
+<pre><code># lower bound
+lb &lt;- gdp_mean - 1.96 * se
+# upper bound
+ub &lt;- gdp_mean + 1.96 * se
+</code></pre>
+<pre><code># results
+lb 
+[1] 8375.531
+</code></pre>
+<pre><code>gdp_mean 
+[1] 10184.09
+</code></pre>
+<pre><code>ub 
+[1] 11992.65
+</code></pre>
+<p>So we are  95%  confident that the population average level of wealth is between $8375.53 US dollars and $11992.65 US dollars. You can see that we are not very certain about our estimate and we most definitely cannot rule out that our friend is right. Note that as we have made use of the 95%  confidence level, in a process of repeated sampling we can expect that the confidence interval that we calculate for each sample will include the true population value  95% of the time.</p>
+<p>We can also estimate the t-test by hand. We subtract the claim of our friend (10000) from our estimated mean and divide the result by the standard error of the estimated mean:</p>
+<pre><code>t.value &lt;- (gdp_mean - 10000) / se
+t.value
+</code></pre>
+<pre><code>[1] 0.1995059
+</code></pre>
+<p>Because our sample is large, the sampling distribution of the test statistic can be approximated by a standard normal distribution, and so if <code>t.value</code> was bigger than 1.96 would imply that we could reject the null hypothesis at the 5% level. This one is much too small.</p>
+<p>Let’s estimate the precise p-value by calculating how likely it would be to observe a t-statistic of 0.1995059 from a t-distribution with n - 1 (177) degrees of freedom.</p>
+<p>Notice, that the function  <code>pt(t.value, df = n-1)</code>  is the cumulative probability that we get the t.value we put into the formula if the null is true. The cumulative probability is estimated as the interval from minus infinity to our <code>t.value</code>. So, 1 minus that probability is the probability that we see anything larger (in the right tale of the distribution). But we are testing whether the true mean is different from 10000 (including smaller). Therefore, we want the probability that we see a <code>t.value</code> in the right tale  <em>or</em>  in the left tale of the distribution. The distribution is symmetric. So we can just calculate the probability of seeing a t-value in the right tale and multiply it by 2.</p>
+<pre><code># p-value calculation
+2* ( 1 - pt(t.value, df = (n-1) ))
+</code></pre>
+<pre><code>[1] 0.8420961
+</code></pre>
+<p>The p-value is way too large to reject the null hypothesis (the true population mean is 10000). If we specified an alpha-level of 0.05 in advance, we would reject it only if the p-value was smaller than 0.05. If we specified an alpha-level of 0.01 in advance, we would reject it only if the p-value was smaller than 0.01, and so on.</p>
+<p>Let’s verify this using the the t-test function  <code>t.test()</code>. The syntax of using this data to test the estimate mean of a data sample is:</p>
+<pre><code>t.test(x, mu, alt, conf)
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>Arguments</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code></td>
+<td>Here we enter the column we are examining (in other cases we can enter a formula as in the next example).</td>
+</tr>
+<tr>
+<td><code>mu</code></td>
+<td>Here, we set the null hypothesis. The null hypothesis is that the true population mean is 10000. Thus, we set  <code>mu=10000</code>.</td>
+</tr>
+<tr>
+<td><code>alt</code></td>
+<td>There are two alternatives to the null hypothesis that the difference in means is zero. The difference could either be smaller or it could be larger than zero. To test against both alternatives, we set  <code>alt = "two.sided"</code>.</td>
+</tr>
+<tr>
+<td><code>conf</code></td>
+<td>Here, we set the level of confidence that we want in rejecting the null hypothesis. Common choices confidence intervals are: 95%, 99%, and 99.9% (these correspond to alpha or significance levels: 0.05, 0.01, 0.001).</td>
+</tr>
+</tbody>
+</table><pre><code>t.test(world_data$gdp, mu = 10000, alt = "two.sided", conf=0.95) 
+</code></pre>
+<pre><code>
+    One Sample t-test
+
+data:  world_data$gdp
+t = 0.19951, df = 177, p-value = 0.8421
+alternative hypothesis: true mean is not equal to 10000
+95 percent confidence interval:
+  8363.113 12005.069
+sample estimates:
+mean of x 
+ 10184.09 
+</code></pre>
+<p>The results are similar. Therefore we can conclude that we are unable to reject the null hypothesis suggested by our friend that the population mean is equal to 10000. Let’s move on to a t-test to test the difference between two estimated means.</p>
+<h3 id="t-test-difference-in-means">T-test (difference in means)</h3>
+<p>We are interested in whether there is a difference in income between countries that have an independent judiciary and countries that do not have an independent judiciary. Put more formally, we are interested in the difference between two conditional means. Recall that a conditional mean is the mean in a subpopulation such as the mean of income given that the country was a victim of colonialization (conditional mean 1).</p>
+<p>The t-test is the appropriate test statistic. Our interval-level dependent variable is  <code>gdp</code>  which is GDP per capita taken from the World Development Indicators of the World Bank. Our binary independent variable is  <code>judiciary</code>.</p>
+<p>Let’s check the summary statistics of our dependent variable GDP per captia using the  <a href="https://www.rdocumentation.org/packages/base/versions/3.4.1/topics/summary"><code>summary()</code></a>. It returns several descriptive statistics as well as the number of NA observations (missing values). Missing values mean that we have no information on the correct value of the variable for an observation. Missing values may be missing for many different reasons. We need to be aware of missings because we cannot calculate with missings.</p>
+<pre><code>summary(world_data$gdp)
+</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+  226.2  1768.0  5326.1 10184.1 12976.5 63686.7      16 
+</code></pre>
+<p>Someone claims that countries with free judiciaries are usually richer than countries with controlled judiciaries. We know from the output of the summary function that across all countries the average wealth is 10184.09 US dollars.</p>
+<p>We use the  <code>which()</code>  function from last week again to identify the row-numbers of the countries in our dataset that have free judiciaries. The code below returns the row index numbers of countries with free judiciaires.</p>
+<pre><code>which(world_data$judiciary=="free")
+</code></pre>
+<pre><code> [1]   9  10  15  16  20  25  31  36  38  43  44  46  47  48  49  55  57
+[18]  59  60  65  75  76  77  79  81  82  83  86  88  91  92  97 101 102
+[35] 113 114 116 119 122 124 125 128 138 139 143 156 157 158 159 163 167
+[52] 168 169 171 174 177 180 181 182 183 184 185 186 194
+</code></pre>
+<p>Now, all we need is to index the dataset like we did last week. We access the variable that we want (<code>gdp</code>) with the dollar sign and the rows in square brackets. The code below returns the per capita wealth of the countries with a free judiciary.</p>
+<pre><code>mean( world_data$gdp[which(world_data$judiciary=="free")], na.rm = TRUE)
+</code></pre>
+<pre><code>[1] 17826.59
+</code></pre>
+<p>Now, go ahead and find the mean per capita wealth of countries with controlled judiciaries yourself.</p>
+<p>(You should find this gives you the value: <code>5884.882</code>.</p>
+<p>Finally, we run the t-test. In this case we are testing whether the hypothesis that GDP is dependant on judiciary.</p>
+<p>To tell R to test this we define the <em>formula</em> using the form <em>dependent variable <code>~</code> independent variable</em>.</p>
+<p>In this case our formula is: <code>world_data$gdp ~ world_data$judiciary</code>. This means the test compares the mean value of GDP according to judiciary value.</p>
+<p>We set <code>mu = 0</code> to show that our null hypothesis is that the difference in means is 0. We would change this if we are testing the hypothesis that the means of the groups is a certain distance apart.</p>
+<p>Our alternative is again <code>alt = "two.sided"</code> reflecting that we are just testing for a difference in means (either positive or negative difference).</p>
+<pre><code>t.test(gdp ~ judiciary, mu = 0, alt = "two.sided", conf = 0.95, data=world_data)
+</code></pre>
+<pre><code>  Welch Two Sample t-test
+
+data:  gdp by judiciary
+t = -6.0094, df = 98.261, p-value = 3.165e-08
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -15885.06  -7998.36
+sample estimates:
+mean in group controlled       mean in group free 
+                5884.882                17826.591 
+</code></pre>
+<p>Let’s interpret the results you get from  <code>t.test()</code>.</p>
+<p>The first line is  <code>data: dependent variable by independent variable</code>. This tells you that you are trying to find out whether there is a difference in means of your dependent variable by the groups of an independent variable. In our example: Do countries with independent judiciaries have different mean income levels than countries without independent judiciaries?</p>
+<p>In the following line you see the t-value, the degrees of freedom and the p-value. Knowing the t-value and the degrees of freedom you can check in a table on t distributions how likely you were to observe this data, if the null-hypothesis was true. The p-value gives you this probability directly. For example, a p-value of 0.02 would mean that the probability of seeing this data given that there is no difference in incomes between countries with and without independent judiciaries  <em>in the population</em>, is 2%. Here the p-value is much smaller than this: 3.165e-08 = 0.00000003156!</p>
+<p>In the next line you see the 95% confidence interval because we specified  <code>conf=0.95</code>. If you were to take 100 samples and in each you checked the means of the two groups, 95 times the difference in means would be within the interval you see there.</p>
+<p>At the very bottom you see the means of the dependent variable by the two groups of the independent variable. These are the means that we estimated above. In our example, you see the mean income levels in countries were the executive has some control over the judiciary, and in countries were the judiciary is independent.</p>
+<p>To view the relationship we can look at the box plot (to plot <code>gdp</code> vs <code>judiciary</code> we can again use the <code>~</code> <em>formula</em> notation.</p>
+<p><code>boxplot(gdp ~ judiciary, data = world_data)</code></p>
+<h3 id="exercises">Exercises</h3>
+<ol>
+<li>Turn former colonies into a factor variable and choose appropriate labels.</li>
+<li>How many countries were former colonies? How many were not?</li>
+<li>Find the means of political stability in countries that (1) were former colonies, (2) were not former colonies.</li>
+<li>Is the the difference in means statistically significant?</li>
+<li>In layman’s terms, are countries which were former colonies more or less stable than those that were not?</li>
+<li>Does the result of part 4. change if we choose an alpha level of 0.01?</li>
+<li>How many countries have a recorded value for United Nations Development index variable  <code>hdi</code>?</li>
+<li>Check the claim that its true population mean is 0.85.</li>
+<li>Discuss your findings in terms of the original claim. Interpret the t value, the p value, and the confidence interval.</li>
+<li>We claim the difference in means in terms of political stability between countries that were former colonies and those that were not is 0.3. Check this hypothesis.</li>
+<li>An angry citizen who wants to defund the Department of International Development (DFID) claims that countries that were former colonies have reached 75% of the level of wealth of countries that were not colonised. Check this claim.</li>
+</ol>
+<h3 id="correlation">Correlation</h3>
+<p>When we want to get an idea about how two continuous variables change together, the best way is to plot the relationship in a scatterplot. A scatterplot means that we plot one continuous variable on the x-axis and the other on the y-axis. Here, we illustrate the relation between the human development index  <code>hdi</code>  and control of corruption  <code>corruption</code>.</p>
+<pre><code># scatterplot
+plot(hdi ~ corruption,
+  data = world_data,
+  xlim = c(xmin = -2, xmax = 3),
+  ylim = c(ymin = 0, ymax = 1),
+  frame = FALSE,
+  xlab = "World Bank Control of Corruption Index",
+  ylab = "UNDP Human Development Index",
+  main = "Relationship b/w Quality of Institutions and Quality of Life"
+  )
+</code></pre>
+<p><img src="https://uclspp.github.io/PUBLG100/PUBLG100_files/figure-html/unnamed-chunk-99-1.png" alt=""></p>
+<p>Sometimes people will report the correlation coefficient which is a measure of linear association and ranges from -1 to +1. Where -1 means perfect negative relation, 0 means no relation and +1 means perfect positive relation. The correlation coefficient is commonly used as as summary statistic. It’s disadvantage is that it only provides information on linear relationships and if you only look at this statistic, without viewing the scatterplot, you may miss a non-linear relation.</p>
+<p>We take the correlation coefficient like so:</p>
+<pre><code>cor(y = world_data$hdi, x = world_data$corruption, use = "complete.obs")
+</code></pre>
+<pre><code>[1] 0.6821114
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code></td>
+<td>The x variable that you want to correlate.</td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td>The y variable that you want to correlate.</td>
+</tr>
+<tr>
+<td><code>use</code></td>
+<td>How R should handle missing values.  <code>use="complete.obs"</code>  will use only those rows where neither  <code>x</code>  nor  <code>y</code>  is missing.</td>
+</tr>
+</tbody>
+</table><p>We use the <code>t.test</code> function to test a hypothesis about the mean value of a population based on a sample. Similarly we can use <code>cor.test</code> to test the correlation value against the null hypothesis that the population correlation is actually zero (variables are uncorrelated).</p>
+<p>This can be called in the following way:</p>
+<pre><code>cor.test(~ hdi+ gdp, data=world_data, )
+</code></pre>
+<pre><code>  Pearson's product-moment correlation
+
+data:  hdi and gdp
+t = 12.75, df = 170, p-value &lt; 2.2e-16
+alternative hypothesis: true correlation is not equal to 0
+95 percent confidence interval:
+ 0.6137236 0.7683987
+sample estimates:
+     cor 
+0.699152 
+</code></pre>
+<p>In the case of correlation we use a one sided formula, <code>~ hdi + gdp</code> to test the correlation between <code>hdi</code> and <code>gdp</code>. This is because testing for correlation does not suppose which variable is dependent and which is independent.</p>
+<p>We can interpret the result using similar arguments to interpreting a t.test result.</p>
+<ul>
+<li>The estimated correlation from the sample is <code>0.699</code></li>
+<li>The 95% confidence limit for the population correlation is between <code>0.613</code> to <code>0.768</code>.</li>
+<li>The probability of finding a correlation value this far from zero under the null hypothesis (both variables independent and distributed normally) is <code>2.2e-16</code> (a very small number!).</li>
+<li>Therefore we find evidence to reject the null hypothesis at the 5% significance level, and accept the hypothesis that the variables are correlated.</li>
+</ul>
+<p>Note in the correlation test we have options:<br>
+<code>alternative =</code> <code>"two.sided"</code>  <code>"less"</code>  or <code>"greater"</code><br>
+depending on if we are testing if the correlation:<br>
+<strong>differs from zero</strong>, <strong>is less than zero</strong>, or <strong>is greater than zero</strong> respectively.</p>
+<h3 id="exercises-1">Exercises</h3>
+<p>Which columns in the dataset show a correlation that is significant at the 5% level?</p>
+</div>
+</body>
+
+</html>
